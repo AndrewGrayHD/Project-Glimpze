@@ -563,7 +563,7 @@ function EndorsementForTraining($Data){
 
 		$connection= $ClassConnection -> Open_connection(2);
 
-		$SQLstring="INSERT INTO TB_Endorsement_Training (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,TrainingDate,UserEmpID,UpdatedBatch) VALUES (?,?,?,?,?,?,?,?)";
+		$SQLstring="INSERT INTO TB_Endorsement_Training (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,TrainingDate,UserEmpID,UpdatedBatch,Lock) VALUES (?,?,?,?,?,?,?,?,?)";
 
 		$Datavalue[]=null;
 		$Datavalue[0]=date('Y-m-d h:m:s');
@@ -574,6 +574,7 @@ function EndorsementForTraining($Data){
 		$Datavalue[5]=date('Y-m-d',strtotime($Data[3]));
 		$Datavalue[6]=$_SESSION['EmployeeID'];
 		$Datavalue[7]=$Data[5];
+		$Datavalue[8]="0";
 
 		$prepExec=odbc_prepare($connection,$SQLstring);
 
@@ -1076,9 +1077,9 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode){
 
 		$connection= $ClassConnection -> Open_connection(2);
 		if($SQLstrCode==1){
-		$SQLstring="INSERT INTO TB_Endorsement_Nesting (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,NestingDate,UserEmpID,UpdatedBatch) VALUES (?,?,?,?,?,?,?,?)";
+		$SQLstring="INSERT INTO TB_Endorsement_Nesting (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,NestingDate,UserEmpID,UpdatedBatch,Lock) VALUES (?,?,?,?,?,?,?,?,?)";
 		}else{
-		$SQLstring="INSERT INTO TB_Endorsement_Operation (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,LiveDate,UserEmpID,UpdatedBatch) VALUES (?,?,?,?,?,?,?,?)";
+		$SQLstring="INSERT INTO TB_Endorsement_Operation (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,LiveDate,UserEmpID,UpdatedBatch,Lock) VALUES (?,?,?,?,?,?,?,?,?)";
 		}
 
 
@@ -1091,7 +1092,7 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode){
 		$Datavalue[5]=date('Y-m-d',strtotime($Data[3]));
 		$Datavalue[6]=$_SESSION['EmployeeID'];
 		$Datavalue[7]=$Data[5];
-
+		$Datavalue[8]="0";
 		
 		$prepExec=odbc_prepare($connection,$SQLstring);
 

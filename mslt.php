@@ -399,7 +399,7 @@
                 </div>
             </div>
         </div>
-
+        </div>
 
              <!-- Modal for upload image -->
             <div class="modal fade" id="FilterListModal" role="dialog">

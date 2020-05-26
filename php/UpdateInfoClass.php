@@ -392,6 +392,7 @@ class UpdateInfo_Engine{
        
         }
 
+
         if( $returnVal==1){
 
         if($SQLcode==1){
@@ -411,13 +412,12 @@ class UpdateInfo_Engine{
 
         $connection= $ClassConnectionDB -> Open_connection(2);
 
-        $prepExec=odbc_prepare($connection,$SQLstring);
-        $execQuery=odbc_execute($prepExec,$Datavalue);
+       
+        $execQuery=odbc_exec($connection,$Datavalue);
 
         $ClassConnectionDB -> Close_connection($connection);
 
     	}
-
          
 
       
