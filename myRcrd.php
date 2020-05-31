@@ -132,7 +132,7 @@
                                 </a>
                         </li>
                           <li>
-                            <a title="My Record" href="myRcrd.php" aria-expanded="false">
+                            <a title="My Activity" href="myRcrd.php" aria-expanded="false">
                                    <i class="fa big-icon fa-table icon-wrap"></i>
                                    <span class="mini-click-non">My Record</span>
                                 </a>
@@ -349,6 +349,36 @@
                             </div>
 
 
+                            <div id="FilterForEndorsement">
+
+                                <div class="form-group">
+                                    <div class="row">
+                  
+                                    <div class="col-sm-6">
+                                        <label  class="login2   pull-right-pro">Process</label> 
+                                        <select name="MyRecordOptionValue2ForEndorsement" class="form-control">
+                                          
+                                        </select>   
+                                    </div>     
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                    <div class="row">
+                  
+                                    <div class="col-sm-6">
+                                        <label class="login2   pull-right-pro">Batch/Wave</label> 
+                                        <select name="MyRecordOptionValue3ForEndorsement" class="form-control">
+                                          
+                                        </select>   
+                                    </div>     
+                                </div>
+                            </div>
+
+
+                        </div>   
+
+                                <div id="FilterForNotification">
 
                                 <div class="form-group">
 
@@ -360,7 +390,7 @@
 
                                 <div class="row">
                                 <div class="col-sm-6">
-                                <label class="login2   pull-right-pro">Range From</label> 
+                                <label class="login2   pull-right-pro">From</label> 
                                 <div class="form-group data-custon-pick" id="data_1">
                                     <div class="input-group date">
                                            
@@ -372,7 +402,7 @@
                                 </div>
                                 <div class="row">
                                 <div class="col-sm-6">
-                                <label class="login2   pull-right-pro">Range To</label> 
+                                <label class="login2   pull-right-pro">To</label> 
                                 <div class="form-group data-custon-pick" id="data_1">
                                     <div class="input-group date">
                                            
@@ -381,6 +411,7 @@
                                         </div>
                                         </div>
                                     </div>   
+                                </div>
                                 </div>
                                 </div>
 
@@ -501,11 +532,12 @@
          $(document).ready(function () {
 
             var userName=<?php  echo json_encode($_SESSION['LastName'].", ".$_SESSION['FirstName']); ?>;
-
+            var tabbleVal=$('#tableforRecordViewer');
         
             $("#UserName").text(userName);
+            exeFunctionTable();
 
-            var InitialFilterOption="<option></option><option>Notification</option><option>Endorsement</option><option>Process Modification</option>";
+            var InitialFilterOption="<option></option><option>Notification</option><option>Endorsement</option><option>Leave Filed & Approval</option>";
 
             $('[name=MyRecordFilterOption]').empty();
             $('[name=MyRecordFilterOption]').append(InitialFilterOption);
@@ -513,26 +545,24 @@
 
             $('[name=MyRecordFilterOption]').change(function(){
 
-               var  dataValue=[];
+                var  dataValue=[];
                 var appendString="";
-               var optionSelected=$('[name=MyRecordFilterOption]').val();
+                var optionSelected=$('[name=MyRecordFilterOption]').val();
 
-                if( optionSelected=="Notification" || optionSelected=="Process Modification"){        
+                if( optionSelected=="Notification"){        
 
                     $.ajax({
                     url: 'php/rrcdAllFunction.php',
-                    data:{functionNumber:1,MyRecordFilterOptionValue:optionSelected},
+                    data:{functionNumber:1},
                     type: 'post',
                     success: function(data){
 
-                            if(optionSelected=="Notification" ){
-                                 $('[name=label1]').text("Status");
-                            }else{
-                                $('[name=label1]').text("Process");
-                            }
-                           
-
+                         
                             $('#FilterContent').show();
+                            $('#FilterForEndorsement').hide();
+                            $('#FilterForNotification').show();
+                            $('[name=label1]').text("Status");
+                         
 
                             var dataValue=JSON.parse(data);
 
@@ -550,13 +580,16 @@
 
                      }
 
-                    });
+                });
                     
                    
                 }else if(optionSelected=="Endorsement"){
 
-                    $('[name=label1]').text("Endorse for : ");
+                    
+                    $('[name=label1]').text("Endorse for");
                     $('#FilterContent').show();
+                    $('#FilterForEndorsement').show();
+                    $('#FilterForNotification').hide();
 
                     appendString="<option>--All--</option>";
                     appendString=appendString+"<option>Training</option>";
@@ -566,13 +599,23 @@
                     $('[name=MyRecordOptionValue]').empty();
                     $('[name=MyRecordOptionValue]').append(appendString); 
 
-                
+                    getListForProcessEndorsement($('[name=MyRecordOptionValue]').val());
+
+
+                }else if(optionSelected=="Leave Filed & Approval"){
+
+                    $('#FilterContent').hide();
+                    $('#FilterForEndorsement').hide();
+                    $('#FilterForNotification').hide();
+
 
                 }else{
 
 
                     $('[name=label1]').text("");
                     $('#FilterContent').hide();
+                    $('#FilterForEndorsement').hide();
+                    $('#FilterForNotification').hide();
 
                 }
 
@@ -582,29 +625,219 @@
             });
 
 
+            function getListForProcessEndorsement(selected1){
+                
+              
+                $('[name=MyRecordOptionValue3ForEndorsement]').empty();
+
+                $.ajax({
+                    url: 'php/rrcdAllFunction.php',
+                    data:{functionNumber:2,SelectedOption1:Selection1},
+                    type: 'post',
+                    success: function(data){
+
+
+                            var dataValue=JSON.parse(data);
+
+                            appendString="<option></option>";
+
+                            for(var a=0;a < dataValue.length;a++){
+
+                             appendString=appendString+"<option>"+dataValue[a]+"</option>";
+
+                            }
+                            
+                           $('[name=MyRecordOptionValue2ForEndorsement]').empty();
+                           $('[name=MyRecordOptionValue2ForEndorsement]').append(appendString);     
+
+
+                    }
+
+                });
+
+            }
+
+               function getListForBatchEndorsement(selected1,selected2){
+                
+                var Selection1=$('[name=MyRecordOptionValue]').val();
+
+
+                $.ajax({
+                    url: 'php/rrcdAllFunction.php',
+                    data:{functionNumber:3,SelectedOption2:Selection1,SelectedOption3:selected2},
+                    type: 'post',
+                    success: function(data){
+
+
+                            var dataValue=JSON.parse(data);
+
+                            appendString="<option></option>";
+
+                            for(var a=0;a < dataValue.length;a++){
+
+                             appendString=appendString+"<option>"+dataValue[a]+"</option>";
+
+                            }
+                            
+                           $('[name=MyRecordOptionValue3ForEndorsement]').empty();
+                           $('[name=MyRecordOptionValue3ForEndorsement]').append(appendString);     
+
+
+                    }
+
+                });
+
+            }
+
             $("[name=MyRecordProceedFilter]").click(function(){
 
-                if($('[name=MyRecordOptionValue]').val() !="" && $('[name=MyRecordFrom]').val() !="" && $('[name=MyRecordTo]').val() ){
+                var Data=[];
+                var appendString="";
+
+                 $('#tableforRecordViewer thead').empty();
+
+
+                if($('[name=MyRecordFilterOption]').val()=="Notification"){
+
+                if($('[name=MyRecordFilterOption]').val() != "" && $('[name=MyRecordOptionValue]').val() !="" && $('[name=MyRecordFrom]').val() !="" && $('[name=MyRecordTo]').val() != "" ){
 
                     
 
+                    Data[0]=$('[name=MyRecordFilterOption]').val();
+                    Data[1]=$('[name=MyRecordOptionValue]').val();
+                    Data[2]=$('[name=MyRecordFrom]').val();
+                    Data[3]=$('[name=MyRecordTo]').val();
 
-                }else{
-                    alert("Fill up all fields");
+                    appendString="<tr><th>Notification Date</th><th>Name</th><th>Status</th><th>Effectived Date</th><th>Action</th></tr>";
+
+                   
+                    $('#tableforRecordViewer thead').append(appendString);
+
+                    
+        
+
+                    $.ajax({
+                    url: 'php/rrcdAllFunction.php',
+                    data:{functionNumber:4,DataVal:Data},
+                    type: 'post',
+                    success: function(data){
+
+                            appendString="";
+                            var dataValue=JSON.parse(data);
+
+                            for(var a=0;a < dataValue[0].length;a++){
+                             appendString=appendString+"<tr>";
+                             appendString=appendString+"<td>"+dataValue[0][a]+"</td>";
+                             appendString=appendString+"<td>"+dataValue[1][a]+"</td>";
+                             appendString=appendString+"<td>"+dataValue[2][a]+"</td>";
+                             appendString=appendString+"<td>"+dataValue[3][a]+"</td>";
+                             appendString=appendString+'<td>';
+                             appendString=appendString+'<button title="View" type="button" class="btn btn-custon-three btn-default btn-sm"><i class="fa big-icon fa-external-link icon-wrap"></i></button>'
+                             if(dataValue[4][a]=="0" || dataValue[4][a]==0){
+                              appendString=appendString+ '<button title="Update"  type="button" class="btn btn-custon-three btn-default btn-sm"><i class="fa big-icon fa-pencil icon-wrap"></i></button>';
+                             }
+                            
+                             appendString=appendString+'</td>';
+                             appendString=appendString+'</tr>';
+                            }
+                            
+                           $('#tableforRecordViewer tbody').empty();
+                           $('#tableforRecordViewer tbody').append(appendString);  
+
+
+                    }
+
+                });
+     
+
+               
+
                 }
+
+                exeFunctionTable();
+
+                }else if($('[name=MyRecordFilterOption]').val()=="Endorsement"){
+
+                if($('[name=MyRecordFilterOption]').val() != "" && $('[name=MyRecordOptionValue]').val() !="" && $('[name=MyRecordOptionValue2ForEndorsement]').val() !="" && $('[name=MyRecordOptionValue3ForEndorsement]').val() != "" ){
+
+                
+                    Data[0]=$('[name=MyRecordFilterOption]').val();
+                    Data[1]=$('[name=MyRecordOptionValue]').val();
+                    Data[2]=$('[name=MyRecordOptionValue2ForEndorsement]').val();
+                    Data[3]=$('[name=MyRecordOptionValue3ForEndorsement]').val();
+
+                    appendString='<tr><td>Notification Date</td><td>Process</td><td>Batch</td><td>Trainer</td><td>Effective Date</td><td>Action</td></tr>';
+
+                    
+                    $('#tableforRecordViewer thead').append(appendString);
+
+                     
+    
+                    $.ajax({
+                    url: 'php/rrcdAllFunction.php',
+                    data:{functionNumber:4,DataVal:Data},
+                    type: 'post',
+                    success: function(data){
+
+                            appendString="";
+                            var dataValue=JSON.parse(data);
+
+                            for(var a=0;a < dataValue[0].length;a++){
+                             appendString=appendString+"<tr>";
+                             appendString=appendString+"<td>"+dataValue[0][a]+"</td>";
+                             appendString=appendString+"<td>"+dataValue[1][a]+"</td>";
+                             appendString=appendString+"<td>"+dataValue[2][a]+"</td>";
+                             appendString=appendString+"<td>"+dataValue[3][a]+"</td>";
+                             appendString=appendString+"<td>"+dataValue[4][a]+"</td>";
+                             appendString=appendString+'<td>';
+                             appendString=appendString+'<button title="View" type="button" class="btn btn-custon-three btn-default btn-sm"><i class="fa big-icon fa-external-link icon-wrap"></i></button>'
+                             if(dataValue[5][a]=="0" || dataValue[5][a]==0){
+                              appendString=appendString+ '<button title="Update"  type="button" class="btn btn-custon-three btn-default btn-sm"><i class="fa big-icon fa-pencil icon-wrap"></i></button>';
+                             }
+                            
+                             appendString=appendString+'</td>';
+                             appendString=appendString+'</tr>';
+
+                            }
+                            
+                           $('#tableforRecordViewer tbody').empty();
+                           $('#tableforRecordViewer tbody').append(appendString);     
+
+
+                    }
+
+                });    
+                        
+ 
+
+                }
+
+               exeFunctionTable();
+
+                }else if($('[name=MyRecordFilterOption]').val()=="Leave Filed & Approval"){
+
+                }
+               
 
             });
 
-            var tabbleVal=$('#tableforRecordViewer');
+                function exeFunctionTable(){
 
-            tabbleVal.bootstrapTable({
+              
+
+                tabbleVal.bootstrapTable({
                 
                 search: true,
                 pagination:true,
                 showPaginationSwitch: true,
                 searchOnEnterKey: true
 
-            });
+                });
+
+                }
+
+            
+
 
             });
 

@@ -25,7 +25,7 @@ include "UpdateInfoClass.php";
 
     	 case 5:
 
-    			echo json_encode(EndorsementForTraining($_POST['dataFieldVal']));	
+    			echo json_encode(EndorsementForTraining($_POST['dataFieldVal'],$_POST['EnorsementSavingProcess']));	
 
 
      	break;
@@ -54,7 +54,7 @@ include "UpdateInfoClass.php";
      	break;
 
      	case 12:
-     			echo json_encode(EndorsementForNestingAndOperation($_POST['dataFieldVal2'],$_POST['STRCode5']));
+     			echo json_encode(EndorsementForNestingAndOperation($_POST['dataFieldVal2'],$_POST['STRCode5'],$_POST['EnorsementSavingProcess2']));
 //EndorsementForNestingAndOperation(array("679454/679462/679458","Gcash Mnl","Reyes, Argee Zamora","05/22/2020","3","Batch-31"),2);
      	break;
 
@@ -472,7 +472,7 @@ function filterAgentList($EndorsementProcessModalC,$EndorsementHiredFromModalC,$
 
 
 
-function EndorsementForTraining($Data){
+function EndorsementForTraining($Data,$EnorsementSavingProcess){
 
 
 
@@ -498,7 +498,7 @@ function EndorsementForTraining($Data){
 
 			while(odbc_fetch_row($execQuery)){
 
-			$ProcessCodeVal=$fieldValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$ProcessCodeVal=odbc_result($execQuery, odbc_field_name($execQuery, 1));
 			
 
 		}
@@ -518,7 +518,7 @@ function EndorsementForTraining($Data){
 		if(!odbc_error($connection)){
 			while(odbc_fetch_row($execQuery)){
 
-			$trainerEmpIDVal=$fieldValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$trainerEmpIDVal=odbc_result($execQuery, odbc_field_name($execQuery, 1));
 			
 
 		}
@@ -532,18 +532,20 @@ function EndorsementForTraining($Data){
 		}
 
 		$alreadyExist=false;
-
+		$userEmpID="";
 
 		$connection= $ClassConnection -> Open_connection(2);
 
 		if($connection){
 
-			$SQLstring="SELECT * FROM TB_Endorsement_Training WHERE AgentsEmpId like "."'".$Data[0]."'"." AND ProcessID=".$ProcessCodeVal." AND TrainerEmpID like "."'".$trainerEmpIDVal."'"." AND TrainingDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
+		$SQLstring="SELECT UserEmpID FROM TB_Endorsement_Training WHERE ProcessID=".$ProcessCodeVal." AND TrainingDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
 
-			$execQuery=odbc_exec($connection, $SQLstring);
+		$execQuery=odbc_exec($connection, $SQLstring);
+
 		if(!odbc_error($connection)){
 			while(odbc_fetch_row($execQuery)){
 
+			$userEmpID=odbc_result($execQuery, odbc_field_name($execQuery, 1));
 			$alreadyExist=true;
 			
 
@@ -557,9 +559,12 @@ function EndorsementForTraining($Data){
 
 		}
 
+		if($EnorsementSavingProcess=="Insert"){
+
 
 
 		if($alreadyExist===false){
+
 
 		$connection= $ClassConnection -> Open_connection(2);
 
@@ -595,8 +600,7 @@ function EndorsementForTraining($Data){
 
     		$UpdateInfo=new UpdateInfo_Engine();
     		
-
-    		 $returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,1);
+    		 $returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,1,$EnorsementSavingProcess);
 
     	}else{
 
@@ -623,6 +627,68 @@ function EndorsementForTraining($Data){
 		}else{
 
 		 return 2;
+
+		}
+
+
+		}else{
+
+
+		$connection= $ClassConnection -> Open_connection(2);
+
+		$SQLstring="UPDATE TB_Endorsement_Training SET AgentsEmpId=?,ProcessID=?,TrainerEmpID=?,NumberBillable=?,TrainingDate=?,UserEmpID=?,UpdatedBatch=? WHERE ProcessID=".$ProcessCodeVal." AND TrainingDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
+
+		$Datavalue[]=null;
+		
+		$Datavalue[0]=$Data[0];
+		$Datavalue[1]=$ProcessCodeVal;
+		$Datavalue[2]=$trainerEmpIDVal;
+		$Datavalue[3]=$Data[4];
+		$Datavalue[4]=date('Y-m-d',strtotime($Data[3]));
+		if($userEmpID==""){$Datavalue[5]=$_SESSION['EmployeeID'];}else{$Datavalue[5]=$userEmpID."/".$_SESSION['EmployeeID'];}
+		$Datavalue[6]=$Data[5];
+
+
+		$prepExec=odbc_prepare($connection,$SQLstring);
+
+     	$execQuery=odbc_execute($prepExec,$Datavalue);
+
+       if(!odbc_error($connection)){
+       		 $rowAffected=@odbc_num_rows($prepExec);
+
+       	if( $rowAffected > 0){
+        	
+    	$InfoUpdateData=$Data;
+    	
+    	$InfoUpdateData[2]=$trainerEmpIDVal;
+
+    	$ClassConnection -> Close_connection($connection);
+
+    	if(date('Y-m-d',strtotime($Data[3])) <= date('Y-m-d')){
+
+    		$UpdateInfo=new UpdateInfo_Engine();
+    		
+    		$returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,1,$EnorsementSavingProcess);
+
+    	}else{
+
+    		 $returnVal=1;
+
+    	}
+    	
+    
+
+        }else{
+
+        return 0;
+
+        }
+
+       	}else{
+
+       	 return 0;
+       	}
+
 
 		}
 
@@ -986,7 +1052,7 @@ function filterNestingList_Operation($EndorsementNestingOperationProcess,$Endors
 
 
 
-function EndorsementForNestingAndOperation($Data,$SQLstrCode){
+function EndorsementForNestingAndOperation($Data,$SQLstrCode,$EnorsementSavingProcess){
 
 
 		$SQLstring="";
@@ -1008,7 +1074,7 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode){
 		if(!odbc_error($connection)){
 			while(odbc_fetch_row($execQuery)){
 
-			$ProcessCodeVal=$fieldValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$ProcessCodeVal=odbc_result($execQuery, odbc_field_name($execQuery, 1));
 			
 
 		}
@@ -1029,7 +1095,7 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode){
 		if(!odbc_error($connection)){
 			while(odbc_fetch_row($execQuery)){
 
-			$trainerEmpIDVal=$fieldValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$trainerEmpIDVal=odbc_result($execQuery, odbc_field_name($execQuery, 1));
 			
 
 		}
@@ -1040,24 +1106,25 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode){
 		}
 
 		$alreadyExist=false;
-
+		$userEmpID="";
 
 		$connection= $ClassConnection -> Open_connection(2);
 
 		if($connection){
 
 			if($SQLstrCode==1){
-			$SQLstring="SELECT * FROM TB_Endorsement_Nesting WHERE AgentsEmpId like "."'".$Data[0]."'"." AND ProcessID=".$ProcessCodeVal." AND TrainerEmpID like "."'".$trainerEmpIDVal."'"." AND NestingDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
+			$SQLstring="SELECT UserEmpID FROM TB_Endorsement_Nesting WHERE ProcessID=".$ProcessCodeVal." AND NestingDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
 			}else{
 
-			$SQLstring="SELECT * FROM TB_Endorsement_Operation WHERE AgentsEmpId like "."'".$Data[0]."'"." AND ProcessID=".$ProcessCodeVal." AND TrainerEmpID like "."'".$trainerEmpIDVal."'"." AND LiveDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
+			$SQLstring="SELECT UserEmpID FROM TB_Endorsement_Operation WHERE ProcessID=".$ProcessCodeVal." AND LiveDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
 
 			}
 
-			$execQuery=odbc_exec($connection, $SQLstring);
+		$execQuery=odbc_exec($connection, $SQLstring);
+
 		if(!odbc_error($connection)){
 			while(odbc_fetch_row($execQuery)){
-
+			$userEmpID=odbc_result($execQuery, odbc_field_name($execQuery, 1));
 			$alreadyExist=true;
 			
 
@@ -1072,10 +1139,12 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode){
 		}
 
 
+		if($EnorsementSavingProcess=="Insert"){
 
 		if($alreadyExist===false){
 
 		$connection= $ClassConnection -> Open_connection(2);
+
 		if($SQLstrCode==1){
 		$SQLstring="INSERT INTO TB_Endorsement_Nesting (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,NestingDate,UserEmpID,UpdatedBatch,Lock) VALUES (?,?,?,?,?,?,?,?,?)";
 		}else{
@@ -1117,11 +1186,11 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode){
     		
     		if($SQLstrCode==1){
     		
-    			$returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,2);
+    			$returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,2,$EnorsementSavingProcess);
     			 
     		}else{
 
-    			 $returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,3);
+    			 $returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,3,$EnorsementSavingProcess);
     		
     		}
 
@@ -1155,7 +1224,83 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode){
 
 	   }
 
+	   }else{
+
+	   	$connection= $ClassConnection -> Open_connection(2);
 		
+		if($SQLstrCode==1){
+		$SQLstring="UPDATE TB_Endorsement_Nesting SET AgentsEmpId=?,ProcessID=?,TrainerEmpID=?,NumberBillable=?,NestingDate=?,UserEmpID=?,UpdatedBatch=? WHERE ProcessID=".$ProcessCodeVal." AND NestingDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
+		}else{
+		$SQLstring="UPDATE TB_Endorsement_Operation SET AgentsEmpId=?,ProcessID=?,TrainerEmpID=?,NumberBillable=?,LiveDate=?,UserEmpID=?,UpdatedBatch=? WHERE ProcessID=".$ProcessCodeVal." AND LiveDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
+		
+		}
+
+
+		$Datavalue[]=null;
+
+		$Datavalue[0]=$Data[0];
+		$Datavalue[1]=$ProcessCodeVal;
+		$Datavalue[2]=$trainerEmpIDVal;
+		$Datavalue[3]=$Data[4];
+		$Datavalue[4]=date('Y-m-d',strtotime($Data[3]));
+		if($userEmpID==""){$Datavalue[5]=$_SESSION['EmployeeID'];}else{$Datavalue[5]=$userEmpID."/".$_SESSION['EmployeeID'];}
+		$Datavalue[6]=$Data[5];
+	
+		
+		$prepExec=odbc_prepare($connection,$SQLstring);
+
+       
+        $execQuery=odbc_execute($prepExec,$Datavalue);
+
+       if(!odbc_error($connection)){
+
+       	$rowAffected=@odbc_num_rows($prepExec);
+
+       	if( $rowAffected > 0){
+        	
+    	$InfoUpdateData=$Data;
+    	
+    	$InfoUpdateData[2]=$trainerEmpIDVal;
+
+    	$ClassConnection -> Close_connection($connection);
+
+    	if(date('Y-m-d',strtotime($Data[3])) <= date('Y-m-d')){
+
+    		$UpdateInfo=new UpdateInfo_Engine();
+    		
+    		if($SQLstrCode==1){
+    		
+    			$returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,2,$EnorsementSavingProcess);
+    			 
+    		}else{
+
+    			 $returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,3,$EnorsementSavingProcess);
+    		
+    		}
+
+    		
+
+    	}else{
+
+    		$returnVal=1;
+
+    	}
+    	
+    
+
+        }else{
+
+        return 0;
+
+        }
+
+       	}else{
+
+        return 0;
+
+       	}
+
+	   }
 	   return $returnVal;
 
 

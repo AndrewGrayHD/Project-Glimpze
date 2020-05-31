@@ -609,26 +609,26 @@
                                 type: 'post',
                                 success: function(data){
 
-                                    var dataValue=JSON.parse(data);
+                                     var dataValue=JSON.parse(data);
                                     
-                                if(dataValue==0){
-                                    alert("Employee status was already active, Delete the previous BTW notification to proceed.");
-                                    EmptyField();
-                                }else if(dataValue==1){
-                                    alert("Employee status was already separated.");
-                                    EmptyField();
-                                }else if(dataValue==2){
+                                 if(dataValue==0){
+                                     alert("Employee was already on active status, delete/update the previous BTW notification to proceed.");
+                                     EmptyField();
+                                 }else if(dataValue==1){
+                                     alert("Employee was already on separated status.");
+                                     EmptyField();
+                                 }else if(dataValue==2){
                                     alert("Error on retrieving data record!");
                                     EmptyField();
-                                }else{
-                                    IndertOrUpdate="Insert";
-                                    $("[name=RtrnPrevNotifDate]").val(dataValue[0]);
-                                    $("[name=RtrnPrevNotif]").val(dataValue[1]);
-                                }
+                                 }else{
+                                     IndertOrUpdate="Insert";
+                                     $("[name=RtrnPrevNotifDate]").val(dataValue[0]);
+                                     $("[name=RtrnPrevNotif]").val(dataValue[1]);
+                                 }
 
-                                }
+                                 }
                     
-                                });
+                                 });
 
                                 }else{
 

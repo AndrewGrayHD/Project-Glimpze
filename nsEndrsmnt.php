@@ -577,6 +577,7 @@
                  //start global variable
                   
                   var userName=<?php  echo json_encode($_SESSION['LastName'].", ".$_SESSION['FirstName']); ?>;
+                  var WhatTodo=<?php  echo json_encode($_SESSION['WhatToDoEndorsement']); ?>;
                   var ProcessModalVal="";
                   var TrainerModalVal="";
                   var BatchModalVal="";
@@ -912,7 +913,7 @@
 
                              $.ajax({
                                 url: 'php/endorsementFunction.php',
-                                data:{functionNumber:12,dataFieldVal2:DataValue,STRCode5:1},
+                                data:{functionNumber:12,dataFieldVal2:DataValue,STRCode5:1,EnorsementSavingProcess2:WhatTodo},
                                 type: 'post',
                                 success: function(data){
                                     
@@ -922,7 +923,8 @@
                                         alert("Nesting endorsement was successfully saved");
                                         clearField();
                                     }else if(result==2){
-                                        alert("Nesting endorsement was already exist");
+                                        
+                                        alert("Nesting endorsement was already exist for "+  DataValue[1] + " " +  DataValue[5] );
                                         clearField();
                                     }else{
                                         alert("Nesting endorsement saving failed!");

@@ -577,6 +577,7 @@
                  //start global variable
                   
                   var userName=<?php  echo json_encode($_SESSION['LastName'].", ".$_SESSION['FirstName']); ?>;
+                  var WhatTodo=<?php  echo json_encode($_SESSION['WhatToDoEndorsement']); ?>;
                   var ProcessModalVal="";
                   var TrainerModalVal="";
                   var BatchModalVal="";
@@ -911,7 +912,7 @@
                      
                              $.ajax({
                                 url: 'php/endorsementFunction.php',
-                                data:{functionNumber:12,dataFieldVal2:DataValue,STRCode5:2},
+                                data:{functionNumber:12,dataFieldVal2:DataValue,STRCode5:2,EnorsementSavingProcess2:WhatTodo},
                                 type: 'post',
                                 success: function(data){
                                     
@@ -920,7 +921,8 @@
                                     if(result==1){
                                         alert("Operation endorsement was successfully saved");
                                     }else if(result==2){
-                                        alert("Operation endorsement was already exist");
+                                        
+                                        alert("Operation endorsement was already exist for "+  DataValue[1] + " " +  DataValue[5] );
                                     }else{
                                         alert("Operation endorsement saving failed!");
                                     }

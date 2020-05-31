@@ -781,49 +781,54 @@
 
                                     $("[name=ResSupervisorTXT]").empty();
                                     $("[name=ResSupervisorTXT]").append(appendString);
+                                
+                                var StatCat="Resigned";
+
 
                                 $.ajax({
                                 url: 'php/notificationFunction.php',
-                                data:{functionNumber:1,EmpIDforNotif:EmpdID},
+                                data:{functionNumber:1,EmpIDforNotif:EmpdID,StatuscategoryResig:StatCat},
                                 type: 'post',
                                 success: function(data){
 
                                     var dataValue=JSON.parse(data);
                                     
-                                    if(dataValue.length-1 > 0){
+                                    if(dataValue== 1){
                                     
-                                        if(dataValue[6]==0 || dataValue[6]=="0"){
+                                     alert("Employee id "+empID+" was already on " + StatCat + " status, Please go to My Record page to update the details.");
+                                         EmptyField();
+                                        // if(dataValue[6]==0 || dataValue[6]=="0"){
 
-                                           var confirmVal=confirm("Already have resignation notification,Would you like to update?");
-                                           if(confirmVal==true){
+                                        //    var confirmVal=confirm("Already have resignation notification,Would you like to update?");
+                                        //    if(confirmVal==true){
 
-                                            IndertOrUpdate="Update";
+                                        //     IndertOrUpdate="Update";
                                              
 
-                                             for(var i=0;i < dataValue.length;i++ ){
+                                        //      for(var i=0;i < dataValue.length;i++ ){
 
-                                                retrievedValue[i]=dataValue[i];
+                                        //         retrievedValue[i]=dataValue[i];
 
-                                             }
+                                        //      }
 
-                                                $("[name=ResDateReceivedTXT]").val(retrievedValue[0]);
-                                                $("[name=ResDateLWDTXT]").val(retrievedValue[1]);
-                                                $("[name=ResEffectiveTXT]").val(retrievedValue[2]);
-                                                $("[name=ResReasonResigTXT]").val(retrievedValue[3]);
-                                                $("[name=ResRenderingPeriodTXT]").val("");
-                                                $("[name=rehireRecTxt]").val("");
+                                        //         $("[name=ResDateReceivedTXT]").val(retrievedValue[0]);
+                                        //         $("[name=ResDateLWDTXT]").val(retrievedValue[1]);
+                                        //         $("[name=ResEffectiveTXT]").val(retrievedValue[2]);
+                                        //         $("[name=ResReasonResigTXT]").val(retrievedValue[3]);
+                                        //         $("[name=ResRenderingPeriodTXT]").val("");
+                                        //         $("[name=rehireRecTxt]").val("");
 
 
-                                           }else{
+                                        //    }else{
 
-                                            EmptyField();
+                                        //     EmptyField();
 
-                                           }
-                                        }else{
+                                        //    }
+                                        // }else{
 
-                                             alert("Already have resignation notification, Modification is lock!");
-                                             EmptyField();
-                                        }
+                                        //      alert("Already have resignation notification, Modification is lock!");
+                                        //      EmptyField();
+                                        // }
 
                                     }else{
 

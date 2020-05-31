@@ -11,13 +11,13 @@ $functionNumber=$_POST['functionNumber'];
 
 switch ($functionNumber) {
 case 1:
-ResignationLedgerCheckExisted($_POST['EmpIDforNotif']);
+ResignationLedgerCheckExisted($_POST['EmpIDforNotif'],$_POST['StatuscategoryResig']);
 break;
 case 2:
  $_SESSION['successfullySave']=ResignationSaving($_POST['ArrayValResig'],$_POST['ToUpdateRef'],$_POST['WhatTodo']);
 break;
 case 3:
-AutoSeparatedCheckExisted($_POST['AutoEmpID'],$_POST['categoryCode']);
+AutoSeparatedCheckExisted($_POST['AutoEmpID'],$_POST['Statuscategory']);
 break;
 case 4:
  $_SESSION['successfullySave']=AutoSeparatedSaving($_POST['ArrayValAuto'],$_POST['ToUpdateRefAuto'],$_POST['WhatTodoAuto']);
@@ -39,38 +39,37 @@ savingAir($_POST['airDataVal'],$_POST['airToUpdateRef'],$_POST['airWhatTodo']);
 break;
 }
 
-function ResignationLedgerCheckExisted($EmployeeID){
+function ResignationLedgerCheckExisted($EmployeeID,$Statuscategory){
 
 try{
 $ClassConnection=new DB_Connection();
-$connection= $ClassConnection -> Open_connection(2);
+$connection= $ClassConnection -> Open_connection(1);
 
 $SQLstring="";
 
 
 
 
-	$SQLstring="SELECT Date_Received,LWD,EffectiveDate,Remarks,RenderingPeriod,RehireRecom,Lock,SenderEmpID FROM TB_Resignation_Notification WHERE EmployeeID like "."'".$EmployeeID."'"." ORDER BY LastUpdate ASC";
+	$SQLstring="SELECT * FROM TB_Information a JOIN TB_State b ON a.TableID=b.TableID WHERE a.EmployeeID like "."'".$EmployeeID."'"." AND b.CurrentStatus like "."'".$Statuscategory."'"."";
 
-	$DateValue[]=null;
+	 $alreadyThisStatus=false;
 
 
 	$execQuery=odbc_exec($connection, $SQLstring);
 
      While(odbc_fetch_row($execQuery)){
      
-     $DateValue[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
-     $DateValue[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
-     $DateValue[2]=odbc_result($execQuery, odbc_field_name($execQuery, 3));
-     $DateValue[3]=odbc_result($execQuery, odbc_field_name($execQuery, 4));
-     $DateValue[4]=odbc_result($execQuery, odbc_field_name($execQuery, 5));
-     $DateValue[5]=odbc_result($execQuery, odbc_field_name($execQuery, 6));
-     $DateValue[6]=odbc_result($execQuery, odbc_field_name($execQuery, 7));
-     $DateValue[7]=odbc_result($execQuery, odbc_field_name($execQuery, 8));
+         $alreadyThisStatus=true;
      }
 
-  echo json_encode($DateValue);   
- $ClassConnection -> Close_connection($connection); 
+      $returnVal=0;
+
+     if( $alreadyThisStatus){
+          $returnVal=1;
+     }
+
+    echo json_encode($returnVal);   
+    $ClassConnection -> Close_connection($connection); 
 
 }catch(Exception $e){
 
@@ -81,33 +80,39 @@ $SQLstring="";
 }
 
 
-function AutoSeparatedCheckExisted($EmployeeID,$categoryCode){
+function AutoSeparatedCheckExisted($EmployeeID,$Statuscategory){
 
 try{
+
 $ClassConnection=new DB_Connection();
-$connection= $ClassConnection -> Open_connection(2);
-
-$SQLstring="SELECT LWD,EffectiveDate,SenderEmpID,Remarks,Lock FROM TB_autoSeparate_Notification WHERE EmployeeID like "."'".$EmployeeID."'"." AND StatusCode=".$categoryCode." ORDER BY LastUpdate ASC";
+$connection= $ClassConnection -> Open_connection(1);
 
 
 
-    $DateValue[]=null;
+$SQLstring="SELECT * FROM TB_Information a JOIN TB_State b ON a.TableID=b.TableID WHERE a.EmployeeID like "."'".$EmployeeID."'"." AND b.CurrentStatus like "."'".$Statuscategory."'"."";
+    
+    $alreadyThisStatus=false;
 
-
+    
     $execQuery=odbc_exec($connection, $SQLstring);
 
      while(odbc_fetch_row($execQuery)){
      
-     $DateValue[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
-     $DateValue[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
-     $DateValue[2]=odbc_result($execQuery, odbc_field_name($execQuery, 3));
-     $DateValue[3]=odbc_result($execQuery, odbc_field_name($execQuery, 4));
-     $DateValue[4]=odbc_result($execQuery, odbc_field_name($execQuery, 5));
-     
+        $alreadyThisStatus=true;
+
+
      }
 
-  echo json_encode($DateValue);   
- $ClassConnection -> Close_connection($connection); 
+     $returnVal=0;
+
+     if( $alreadyThisStatus){
+          $returnVal=1;
+     }
+
+
+    echo json_encode($returnVal);   
+    $ClassConnection -> Close_connection($connection); 
+
 }catch(Exception $e){
        
 }
@@ -613,14 +618,16 @@ function backtoworkSaving($DataVal,$whatTodo){
 function checkAir($Prolonged,$empID){
 
  $ClassConnection=new DB_Connection();
- $connection= $ClassConnection -> Open_connection(2);  
+ 
 
     $SQLstring="";
     $dataValue[]=null;
 
-    if($connection){
+    $connection= $ClassConnection -> Open_connection(1);  
 
-        $SQLstring="SELECT a.LWD,a.EffectiveDate,a.ExpectedBacktoWork,a.lastTimeCom,a.actionTaken,a.Remarks,a.forMLtype,a.forMLNodonate,a.forMLNodonate,a.SenderEmpID,a.LastUpdate,a.Lock FROM TB_Air_Notification a JOIN DB_Employee_Management_System.dbo.TB_Status b ON a.RquestIssuance=b.Stat_Num WHERE a.EmployeeID like "."'".$empID."'"." AND b.Stat_Remarks like "."'".$Prolonged."'"." AND a.Lock=0 ORDER BY LastUpdate ASC";
+        $SQLstring="SELECT * FROM TB_Information a JOIN TB_State b ON a.TableID=b.TableID WHERE a.EmployeeID like "."'".$empID."'"." AND b.CurrentStatus like "."'".$Prolonged."'"."";
+
+       
 
         $HaveData=false;
 
@@ -628,28 +635,24 @@ function checkAir($Prolonged,$empID){
 
           while(odbc_fetch_row($execQuery)){
      
-                $dataValue[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
-                $dataValue[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
-                $dataValue[2]=odbc_result($execQuery, odbc_field_name($execQuery, 3));
-                $dataValue[3]=odbc_result($execQuery, odbc_field_name($execQuery, 4));
-                $dataValue[4]=odbc_result($execQuery, odbc_field_name($execQuery, 5));
-                $dataValue[5]=odbc_result($execQuery, odbc_field_name($execQuery, 6));
-                $dataValue[6]=odbc_result($execQuery, odbc_field_name($execQuery, 7));
-                $dataValue[7]=odbc_result($execQuery, odbc_field_name($execQuery, 8));
-                $dataValue[8]=odbc_result($execQuery, odbc_field_name($execQuery, 9));
-                $dataValue[9]=odbc_result($execQuery, odbc_field_name($execQuery, 10));
-                $dataValue[10]=odbc_result($execQuery, odbc_field_name($execQuery, 11));
-                $dataValue[11]=odbc_result($execQuery, odbc_field_name($execQuery, 12));
+         
                  $HaveData=true;
             }
 
+       
+
+                $resultVal=0;
+
+                if($HaveData){
+                
+                $resultVal=1;
+
+                }
+
+        echo json_encode($resultVal);
+        $ClassConnection -> Close_connection($connection);           
                 
 
-                echo json_encode($dataValue);
-                
-                $ClassConnection -> Close_connection($connection); 
-
-    }
 
      
 
@@ -692,7 +695,7 @@ function savingAir($DataVal,$Ref,$whatTodo){
 
             $Validationconnection= $ClassConnection -> Open_connection(2);
 
-            $SQLstring="SELECT * FROM TB_Air_Notification a JOIN DB_Employee_Management_System.dbo.TB_Status b ON a.RquestIssuance=b.Stat_Num WHERE a.EmployeeID like "."'".$DataVal[0]."'"." AND a.EffectiveDate="."'".date('Y-m-d',strtotime($DataVal[8]))."'"." AND b.Stat_Remarks like "."'".$DataVal[6]."'"." AND a.Lock=0 ORDER BY a.LastUpdate ASC";
+            $SQLstring="SELECT * FROM TB_Air_Notification a JOIN DB_Employee_Management_System.dbo.TB_Status b ON a.RquestIssuance=b.Stat_Num WHERE a.EmployeeID like "."'".$DataVal[0]."'"." AND a.EffectiveDate="."'".date('Y-m-d',strtotime($DataVal[8]))."'"." AND b.Stat_Remarks like "."'".$DataVal[6]."'"." ORDER BY a.LastUpdate ASC";
 
             $AlreadyExist=false;
 

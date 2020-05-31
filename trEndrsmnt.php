@@ -607,13 +607,14 @@
 
                  //start global variable
                   var userName=<?php  echo json_encode($_SESSION['LastName'].", ".$_SESSION['FirstName']); ?>;
-
+                  var WhatTodo=<?php  echo json_encode($_SESSION['WhatToDoEndorsement']); ?>;
                  //end global variable
 
                 $("#UserName").text(userName);
                 fillProcessAndTrainerName();
 
-        
+
+                
 
                 $("[name=traingEndorsementFilterButton]").click(function(){
 
@@ -974,7 +975,7 @@
                        
                              $.ajax({
                                 url: 'php/endorsementFunction.php',
-                                data:{functionNumber:5,dataFieldVal:DataValue},
+                                data:{functionNumber:5,dataFieldVal:DataValue,EnorsementSavingProcess:WhatTodo},
                                 type: 'post',
                                 success: function(data){
                                     
@@ -984,7 +985,7 @@
                                         alert("Training endorsement was successfully saved");
                                         clearField();
                                     }else if(result==2){
-                                        alert("Training endorsement was already exist");
+                                        alert("Training endorsement was already exist for "+  DataValue[1] + " " +  DataValue[5] );
                                         clearField();
                                     }else{
                                         alert("Training endorsement saving failed!");

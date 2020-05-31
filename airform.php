@@ -810,67 +810,68 @@
                     var statusSelection= $("[name=airRequestIssuance]").val();
                     deleteInitialValue();
 
-                    $.ajax({
-                                url: 'php/notificationFunction.php',
-                                data:{functionNumber:8,airSelectionVal:statusSelection,airEmpID:empID},
-                                type: 'post',
+                     $.ajax({
+                                 url: 'php/notificationFunction.php',
+                                 data:{functionNumber:8,airSelectionVal:statusSelection,airEmpID:empID},
+                                 type: 'post',
                                 success: function(data){
                                                     
-                                    var result=JSON.parse(data);
-                                    //Date formatting
-                                    var monthVal;
-                                    var DayVal;
-                                    var yearVal;
-                                    var DateVal;
+                                     var result=JSON.parse(data);
+                                     //Date formatting
+                                     // var monthVal;
+                                     // var DayVal;
+                                     // var yearVal;
+                                     // var DateVal;
 
-                                    if(result.length-1 > 0){
-                                       var confirmUpdate= confirm("Already send " + $("[name=airRequestIssuance]").val() + " notification within 5 days, Would you like to update?");
+                                     if(result==1){
+                                        //var confirmUpdate= confirm("Employee id "+empID+" was already on " + $("[name=airRequestIssuance]").val() + " status, Please go to My Record page to update the details.");
+                                        alert("Employee id "+empID+" was already on " + $("[name=airRequestIssuance]").val() + " status, Please go to My Record page to update the details.");
+                                        deleteallFields();
+                                        // if(confirmUpdate==true){
+                                        //  DateVal=new Date(result[0]);
+                                        //  monthVal=DateVal.getMonth()+1;
+                                        //  DayVal=DateVal.getDate();
+                                        //  yearVal=DateVal.getFullYear();
+                                        //  $("[name=airLWD]").val(monthVal+"/"+DayVal+"/"+yearVal);
+                                        // DateVal=new Date(result[1]);
+                                        // monthVal=DateVal.getMonth()+1;
+                                        //  DayVal=DateVal.getDate();
+                                        //  yearVal=DateVal.getFullYear();
+                                        //  $("[name=airEffectivedDate]").val(monthVal+"/"+DayVal+"/"+yearVal);
+                                        // DateVal=new Date(result[2]);
+                                        //  monthVal=DateVal.getMonth()+1;
+                                        //  DayVal=DateVal.getDate();
+                                        //  yearVal=DateVal.getFullYear();
+                                        //  $("[name=airExpectedBack]").val(monthVal+"/"+DayVal+"/"+yearVal);
 
-                                       if(confirmUpdate==true){
-                                        DateVal=new Date(result[0]);
-                                        monthVal=DateVal.getMonth()+1;
-                                        DayVal=DateVal.getDate();
-                                        yearVal=DateVal.getFullYear();
-                                        $("[name=airLWD]").val(monthVal+"/"+DayVal+"/"+yearVal);
-                                        DateVal=new Date(result[1]);
-                                        monthVal=DateVal.getMonth()+1;
-                                        DayVal=DateVal.getDate();
-                                        yearVal=DateVal.getFullYear();
-                                        $("[name=airEffectivedDate]").val(monthVal+"/"+DayVal+"/"+yearVal);
-                                        DateVal=new Date(result[2]);
-                                        monthVal=DateVal.getMonth()+1;
-                                        DayVal=DateVal.getDate();
-                                        yearVal=DateVal.getFullYear();
-                                        $("[name=airExpectedBack]").val(monthVal+"/"+DayVal+"/"+yearVal);
-
-                                        $("[name=airLastTimeOfCom]").val(result[3]);
-                                        $("[name=airActionTaken]").val(result[4]);
-                                        $("[name=airRemarks]").val(result[5]);
+                                        //  $("[name=airLastTimeOfCom]").val(result[3]);
+                                        //  $("[name=airActionTaken]").val(result[4]);
+                                        // $("[name=airRemarks]").val(result[5]);
                                       
                                         
-                                        retrievedValue[0]=result[9];
-                                        retrievedValue[1]=result[10];
-                                        retrievedValue[2]=result[11];
-                                        alert( retrievedValue[1]);
-                                        IndertOrUpdate="Update";
+                                        //  retrievedValue[0]=result[9];
+                                        //  retrievedValue[1]=result[10];
+                                        //  retrievedValue[2]=result[11];
+                                        //  alert( retrievedValue[1]);
+                                        //  IndertOrUpdate="Update";
 
-                                        }else{
+                                        //  }else{
 
-                                            deleteallFields();
+                                        //      deleteallFields();
 
-                                        }
+                                        //  }
 
-                                        }else{
+                                         }else{
 
-                                        IndertOrUpdate="Insert";
+                                         IndertOrUpdate="Insert";
 
-                                        }
+                                         }
                                 
 
-                                }
+                                 }
 
                         
-                        }); 
+                       }); 
 
 
 

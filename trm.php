@@ -602,48 +602,51 @@
                                     $("[name=termSupervisor]").empty();
                                     $("[name=termSupervisor]").append(appendString);
 
-
+                                var statusCat="Terminated";
+                                    
                                 $.ajax({
                                 url: 'php/notificationFunction.php',
-                                data:{functionNumber:3,AutoEmpID:EmpdID,categoryCode:1},
+                                data:{functionNumber:3,AutoEmpID:EmpdID,Statuscategory:statusCat},
                                 type: 'post',
                                 success: function(data){
 
                                     var dataValue=JSON.parse(data);
                                     
-                                    if(dataValue.length-1 > 0){
+                                    if(dataValue == 1){
                                     
-                                        if(dataValue[4]==0 || dataValue[4]=="0"){
+                                    alert("Employee id "+EmpdID+" was already on " + statusCat + " status, Please go to My Record page to update the details.");
+                                    EmptyField();
+                                        // if(dataValue[4]==0 || dataValue[4]=="0"){
 
-                                           var confirmVal=confirm("Already have termination notification,Would you like to update?");
-                                           if(confirmVal==true){
+                                        //    var confirmVal=confirm("Already have termination notification,Would you like to update?");
+                                        //    if(confirmVal==true){
 
-                                            IndertOrUpdate="Update";
+                                        //     IndertOrUpdate="Update";
                                              
 
-                                             for(var i=0;i < dataValue.length;i++ ){
+                                        //      for(var i=0;i < dataValue.length;i++ ){
 
-                                                retrievedValue[i]=dataValue[i];
+                                        //         retrievedValue[i]=dataValue[i];
 
-                                             }
+                                        //      }
 
                                                
-                                                $("[name=termLWD]").val(retrievedValue[0]);
-                                                $("[name=termEffective]").val(retrievedValue[1]);
-                                                $("[name=termReasonTerm]").val(retrievedValue[3]);
+                                        //         $("[name=termLWD]").val(retrievedValue[0]);
+                                        //         $("[name=termEffective]").val(retrievedValue[1]);
+                                        //         $("[name=termReasonTerm]").val(retrievedValue[3]);
                                                 
 
 
-                                           }else{
+                                        //    }else{
 
-                                            EmptyField();
+                                        //     EmptyField();
 
-                                           }
-                                        }else{
+                                        //    }
+                                        // }else{
 
-                                             alert("Already have termination notification, Modification is lock!");
-                                             EmptyField();
-                                        }
+                                        //      alert("Already have termination notification, Modification is lock!");
+                                        //      EmptyField();
+                                        // }
 
                                     }else{
 
