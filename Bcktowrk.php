@@ -612,10 +612,10 @@
                                      var dataValue=JSON.parse(data);
                                     
                                  if(dataValue==0){
-                                     alert("Employee was already on active status, delete/update the previous BTW notification to proceed.");
+                                     alert("Employee was already on active status, delete/update the previous notification to proceed.");
                                      EmptyField();
                                  }else if(dataValue==1){
-                                     alert("Employee was already on separated status.");
+                                     alert("Employee was already on separated status, delete/update the previous notification to proceed.");
                                      EmptyField();
                                  }else if(dataValue==2){
                                     alert("Error on retrieving data record!");
@@ -774,12 +774,12 @@
                                         alert("Notification successfully saved and send");
                                         EmptyField();
                                     }else if(successfullySaved==2){
-                                        alert("Problem in updating employee status,Notification successfully saved and send");
+                                        alert("Problem in updating employee status, notification successfully saved and send");
                                         EmptyField();
                                         
                                      }else if(successfullySaved==3){
 
-                                        alert("Notification was already exist");
+                                        alert("Can't save and send notification,maybe it already exist or in pending status");
 
                                     }else{
 

@@ -24,8 +24,8 @@ class UpdateInfo_Engine{
 
         	
 
-        	  $connection= $ClassConnectionDB -> Open_connection(1);
-			  $SQLstring="SELECT a.HistoryRemarks FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'". $agentEmpIds[$ace]."'"."";
+        	$connection= $ClassConnectionDB -> Open_connection(1);
+			$SQLstring="SELECT a.HistoryRemarks FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'". $agentEmpIds[$ace]."'"."";
 
 			$execQuery=odbc_exec($connection, $SQLstring);
 
@@ -426,9 +426,10 @@ class UpdateInfo_Engine{
 
 	}
 
-function AirUpdateInfo($Data,$statCode){
+function AirUpdateInfo($Data,$statCode,$whatTodo){
 
 
+			$ClassConnectionDB=new DB_Connection();
 
 			$SQLstring="";
 			$RemarksValue="";
@@ -436,16 +437,38 @@ function AirUpdateInfo($Data,$statCode){
         	$returnVal=0;
         	$Datavalue[]=null;
 
+        	$LastUpdate="";
+        	$LastEffectivedDate="";
+
+        	$getTrackingColumn[]=null;
+
+        	 $connection= $ClassConnectionDB -> Open_connection(3);
+
+        	  $SQLstring="SELECT TOP 1 a.LastTableID,b.Table_Name,c.Stat_Category FROM TB_NotificationTracking a JOIN TB_TableLinkNotification b ON a.StatusID=b.Stat_Num JOIN DB_Employee_Management_System.dbo.TB_Status c ON a.StatusID=c.Stat_Num WHERE a.EmployeeID like "."'".$Data[0]."'"." ORDER BY DateTimeStamp DESC";
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	
+
+        	 while(odbc_fetch_row($execQuery)){
+
+				$getTrackingColumn[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+				$getTrackingColumn[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+				$getTrackingColumn[2]=odbc_result($execQuery, odbc_field_name($execQuery, 3));
+			}
+
+			 $ClassConnectionDB -> Close_connection($connection);
 
 			$connection= $ClassConnectionDB -> Open_connection(1);
-			$SQLstring="SELECT a.HistoryRemarks FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+			$SQLstring="SELECT a.HistoryRemarks,c.EffectiveDate,c.LastUpdate FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID LEFT JOIN DB_Employee_Management_System_Notification.dbo.".$getTrackingColumn[1]." c ON b.EmployeeID=c.EmployeeID WHERE b.EmployeeID like "."'".$Data[0]."'"." AND c.TableID=".$getTrackingColumn[0]."";
 
 			$execQuery=odbc_exec($connection, $SQLstring);
 			if(!odbc_error($connection)){
 			while(odbc_fetch_row($execQuery)){
 
-			$RemarksValue=$fieldValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
-			
+			$RemarksValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$LastEffectivedDate=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+			$LastUpdate=odbc_result($execQuery, odbc_field_name($execQuery, 3));
 
 			}
 			}else{
@@ -453,6 +476,7 @@ function AirUpdateInfo($Data,$statCode){
            	return 2;
            
            	}
+
 		   $ClassConnectionDB -> Close_connection($connection);
 
 		  
@@ -460,11 +484,15 @@ function AirUpdateInfo($Data,$statCode){
 		   		  $NewRemarksValue=$RemarksValue."/";
 		   }
 
-		 $NewRemarksValue=$NewRemarksValue.$Data[6]."-".$Data[8];
+
+
+		 $NewRemarksValue=$NewRemarksValue.$Data[6].":".date('Y-m-d',strtotime($Data[8])).":LastUpdate-".date('Y-m-d h:m:s');
+
+		 if($whatTodo=="Insert"){
 
 		 $connection= $ClassConnectionDB -> Open_connection(1);
 
-		 $SQLstring="UPDATE Info SET Info.Billable,Info.CurrentStatus=?,Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
+		 $SQLstring="UPDATE Info SET Info.Billable=?,Info.CurrentStatus=?,Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
 ;
 			
 			$Datavalue[0]="2";
@@ -472,57 +500,322 @@ function AirUpdateInfo($Data,$statCode){
 			$Datavalue[2]=$NewRemarksValue;
 			
 			$prepExec=odbc_prepare($connection,$SQLstring);
-			
-   	
+			   	
         	$execQuery=odbc_execute($prepExec,$Datavalue);
 
         	if(!odbc_error($connection)){
            	
         	 $ClassConnectionDB -> Close_connection($connection);
 
-        	 $connection= $ClassConnectionDB -> Open_connection(2);
+        	
 
-        	 $SQLstring="UPDATE TB_Air_Notification SET Lock=1 WHERE EmployeeID like "."'".$Data[0]."'"." AND RquestIssuance=".$statCode." AND EffectiveDate="."'".date('Y-m-d',strtotime($Data[8]))."'"."";
+			 $connection= $ClassConnectionDB -> Open_connection(2);
+
+        	 $SQLstring="UPDATE ".$getTrackingColumn[1]." SET Lock=1 WHERE TableID=".$getTrackingColumn[0]." WHERE EmployeeID like "."'".$Data[0]."'"."";
+
 
         	 $execQuery=odbc_exec($connection, $SQLstring);
 
-        	 $returnVal=1;
-       
+        	  if(!odbc_error($connection)){
+        	 
+        	 $connection= $ClassConnectionDB -> Open_connection(2);
+
+        	 $SQLstring="SELECT TOP 1 EmployeeID,StatusCode,TableID FROM TB_Air_Notification WHERE EmployeeID like "."'".$Data[0]."'"." ORDER BY DateRequest DESC"
+
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 $getTrackingToInsert[0]=date('Y-m-d h:m:s');
+
+        	 while(odbc_fetch_row($execQuery)){
+
+				$getTrackingToInsert[1]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+				$getTrackingToInsert[2]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+				$getTrackingToInsert[3]=odbc_result($execQuery, odbc_field_name($execQuery, 3));
+			}
+
+        	 $ClassConnectionDB -> Close_connection($connection);
+
+        	$connection= $ClassConnectionDB -> Open_connection(3);
+
+        	$SQLstring="INSERT INTO TB_NotificationTracking (DateTimeStamp,EmployeeID,StatusID,LastTableID) VALUES (?,?,?,?)";
+
+        	$prepExec=odbc_prepare($connection,$SQLstring);
+			   	
+        	$execQuery=odbc_execute($prepExec,$getTrackingToInsert); 
+
+        	if(!odbc_error($connection)){
+
+        		 $returnVal=1;
+        		 $ClassConnectionDB -> Close_connection($connection);
+
+        	}else{
+
+        	 return 2;
+        	 
+        	}
+
+        	}else{
+
+        	return 2;
+        	 
+        	}
+
+ 
            	}else{
 
            	return 2;
            
            	}
 
-           	
-           	
+		 }else{
+
+		 
+		 $explodeRemarksVal=explode("/",$RemarksValue); 
+
+		  $remarksPos=0;
+
+		 for($a=0;$a < count ($explodeRemarksVal);$a++){
+
+		 	$LastUpdate="";
+        	$LastEffectivedDate="";
+
+		 	if($explodeRemarksVal[$a]===$Data[6].":".date('Y-m-d',strtotime($LastEffectivedDate)).":LastUpdate-".date('Y-m-d h:m:s',strtotime($LastUpdate))){
+
+		 		 $remarksPos=$a;
+
+		 	}
+		 }
+		 	
+		 if(date('Y-m-d',strtotime($DataVal[8]))<=date('Y-m-d')){
+ 				
+		 $connection= $ClassConnectionDB -> Open_connection(1);
+
+		 $SQLstring="UPDATE Info SET Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
+		 
+		 
+		 for($i=0;$i < count ($explodeRemarksVal);$i++){
+
+		 	if($i != $remarksPos){
+		 	
+		 	if($i==0){
+		 	$Datavalue[0]=$explodeRemarksVal[$i];
+
+		 	}else{
+		 	$Datavalue[0]=$Datavalue[0]."/".$explodeRemarksVal[$i]
+		 	}
+
+		 	}
+		 
+		 }
+
+		 if( $Datavalue[0]!="" &&  $Datavalue[0]!=null){
+		   		$Datavalue[0]=$Datavalue[0]."/";
+		 }
+		 $Datavalue[0]=$Datavalue[0].$Data[6].":".date('Y-m-d',strtotime($Data[8])).":LastUpdate-".date('Y-m-d h:m:s');
+
+		 $prepExec=odbc_prepare($connection,$SQLstring);
+			   	
+         $execQuery=odbc_execute($prepExec,$Datavalue);
+
+          if(!odbc_error($connection)){
+
+          	 $returnVal=1;
+
+          }else{
+
+          	return 2;
+
+          }
+
+ 		 }else if(date('Y-m-d',strtotime($DataVal[8])) > date('Y-m-d')){
+            
+          $SQLstring="WITH T AS (SELECT TOP 1 * FROM TB_NotificationTracking WHERE EmployeeID like "."'".$Data[0]."'"." ORDER BY DateTimeStamp DESC) DELETE FROM T";
+
+          $connection= $ClassConnectionDB -> Open_connection(3);
+
+          $execQuery=odbc_exec($connection, $SQLstring);
+
+          if(!odbc_error($connection)){
+
+          $ClassConnectionDB -> Close_connection($connection);
+
+          $getTheLatestNotifData[]=null;
+
+     
+
+           	$SQLstring="SELECT TOP 1 b.Stat_Remarks,d.PositionCategoryVal FROM TB_NotificationTracking a JOIN DB_Employee_Management_System.dbo.TB_Status b ON a.StatusID=b.Stat_Num JOIN DB_Employee_Management_System.dbo.TB_Information c ON a.EmployeeID=c.EmployeeID JOIN DB_Employee_Management_System.dbo.TB_PositionCategory d ON c.Position=d.Code WHERE a.EmployeeID like "."'".$Data[0]."'"." ORDER BY a.DateTimeStamp DESC";
+
+           
+
+           $connection= $ClassConnectionDB -> Open_connection(3);
+
+           $execQuery=odbc_exec($connection, $SQLstring);
+
+            while(odbc_fetch_row($execQuery)){
+
+			$getTheLatestNotifData[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$getTheLatestNotifData[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+			}
+
+		  $ClassConnectionDB -> Close_connection($connection);
+
+
+
+		  $connection= $ClassConnectionDB -> Open_connection(1);
+
+			$SQLstring="UPDATE Info SET Info.Billable=?,Info.CurrentStatus=?,Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
+
+
+			if($getTheLatestNotifData[0]=="Active"){
+
+				if($getTheLatestNotifData[1]==$_SESSION['defaultPosition']){
+				$Datavalue[0]="1";
+				}else{
+				$Datavalue[0]="2";
+				}
+
+			}else{
+
+				$Datavalue[0]="2";
+			}
+			
+			$Datavalue[1]=$getTheLatestNotifData[0];
+
+			
+			for($i=0;$i < count ($explodeRemarksVal);$i++){
+
+		 	if($i != $remarksPos){
+		 	
+		 	if($i==0){
+		 	$Datavalue[2]=$explodeRemarksVal[$i];
+
+		 	}else{
+		 	$Datavalue[2]=$Datavalue[2]."/".$explodeRemarksVal[$i]
+		 	}
+
+		 	}
+		 
+		 	}
+
+		 if( $Datavalue[2]=="" &&  $Datavalue[2]==null){
+		   		$Datavalue[2]="";
+		 }
+		
+			$prepExec=odbc_prepare($connection,$SQLstring);
+			   	
+        	$execQuery=odbc_execute($prepExec,$Datavalue);
+
+          if(!odbc_error($connection)){
+          
+           $ClassConnectionDB -> Close_connection($connection);
+
+           $connection= $ClassConnectionDB -> Open_connection(3);
+
+        	 $SQLstring="SELECT TOP 1 a.LastTableID,b.Table_Name FROM TB_NotificationTracking a JOIN TB_TableLinkNotification b ON a.StatusID=b.Stat_Num WHERE a.EmployeeID like "."'".$Data[0]."'"." ORDER BY DateTimeStamp DESC";
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 $getTrackingColumn2[]=null;
+        	 
+        	 while(odbc_fetch_row($execQuery)){
+
+				$getTrackingColumn2[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+				$getTrackingColumn2[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+
+			}
+
+			 $ClassConnectionDB -> Close_connection($connection);
+
+
+			 $connection= $ClassConnectionDB -> Open_connection(2);
+
+        	 $SQLstring="UPDATE ".$getTrackingColumn2[1]." SET Lock=0 WHERE TableID=".$getTrackingColumn2[0]." WHERE EmployeeID like "."'".$Data[0]."'"."";
+
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+          if(!odbc_error($connection)){
+
+          	$returnVal=1;
+
+          }else{
+
+           return 2;
+          }
+
+          }else{
+
+           return 2;
+          }
+
+          }else{
+
+           return 2;
+          }
+
+
+
+        }
+
+	}
+
+	
+
+         	
            	
   
 
 		 return $returnVal;
 }
 
-function  btwUpdateInfo($Data){
+function  btwUpdateInfo($Data,$whatTodo){
 
 
-	
+			$ClassConnectionDB=new DB_Connection();
 
 			$SQLstring="";
 			$RemarksValue="";
         	$NewRemarksValue="";
         	$PositionVal="";
+        	$DefauktstatusCode="";
         	$returnVal=0;
         	$Datavalue[]=null;
 
+
+        	$LastUpdate="";
+        	$LastEffectivedDate="";
+
+
+        	 $connection= $ClassConnectionDB -> Open_connection(3);
+
+        	 $SQLstring="SELECT TOP 1 a.LastTableID,b.Table_Name,c.Stat_Category FROM TB_NotificationTracking a JOIN TB_TableLinkNotification b ON a.StatusID=b.Stat_Num JOIN DB_Employee_Management_System.dbo.TB_Status c ON a.StatusID=c.Stat_Num WHERE a.EmployeeID like "."'".$Data[0]."'"." ORDER BY DateTimeStamp DESC";
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	
+
+        	 while(odbc_fetch_row($execQuery)){
+
+				$getTrackingColumn[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+				$getTrackingColumn[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+				$getTrackingColumn[2]=odbc_result($execQuery, odbc_field_name($execQuery, 3));
+			}
+
+			$ClassConnectionDB -> Close_connection($connection);
+
+
         	$connection= $ClassConnectionDB -> Open_connection(1);
-        	$SQLstring="SELECT a.HistoryRemarks,c.PositionCategoryVal FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID JOIN TB_PositionCategory c ON a.Position=c.Code WHERE b.EmployeeID like "."'".$Data[0]."'"."";
 
-        	$execQuery=odbc_exec($connection, $SQLstring);
-        	if(!odbc_error($connection)){
-			while(odbc_fetch_row($connection)){
+			$SQLstring="SELECT a.HistoryRemarks,c.EffectiveDate,c.LastUpdate FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID LEFT JOIN DB_Employee_Management_System_Notification.dbo.".$getTrackingColumn[1]." c ON b.EmployeeID=c.EmployeeID WHERE b.EmployeeID like "."'".$Data[0]."'"." AND c.TableID=".$getTrackingColumn[0]."";
 
-			$RemarksValue=$fieldValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
-			
+			$execQuery=odbc_exec($connection, $SQLstring);
+			if(!odbc_error($connection)){
+			while(odbc_fetch_row($execQuery)){
+
+			$RemarksValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$LastEffectivedDate=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+			$LastUpdate=odbc_result($execQuery, odbc_field_name($execQuery, 3));
 
 			}
 			}else{
@@ -538,39 +831,52 @@ function  btwUpdateInfo($Data){
 		   		  $NewRemarksValue=$RemarksValue."/";
 		   }
 
-		   	$connection= $ClassConnectionDB -> Open_connection(1);
+			
 
-		   	$SQLstring="SELECT * FROM TB_DefaultValues";
+           $SQLstring="SELECT FROM TB_Information a JOIN TB_PositionCategory b ON a.Position=b.Code WHERE a.EmployeeID like "."'".$Data[0]."'"."";
 
-		   	$execQuery=odbc_exec($connection, $SQLstring);
-		   	if(!odbc_error($connection)){
-			while(odbc_fetch_row($connection)){
+           $connection= $ClassConnectionDB -> Open_connection(1);
 
-			$PositionforValid=$fieldValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
-			$TenureStatusValid=$fieldValue=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+           $execQuery=odbc_exec($connection, $SQLstring);
 
+            while(odbc_fetch_row($execQuery)){
+
+			$PositionVal=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			
 			}
-			}else{
 
-           	return 2;
-           
-           	}
+		  	$ClassConnectionDB -> Close_connection($connection);
 
-		   $ClassConnectionDB -> Close_connection($connection);
+		   $SQLstring="SELECT PositionBillable,statusDefault FROM TB_DefaultValues";
 
-		    $NewRemarksValue=$NewRemarksValue."Back to work-".$Data[6];
+           $connection= $ClassConnectionDB -> Open_connection(1);
 
+           $execQuery=odbc_exec($connection, $SQLstring);
+
+            while(odbc_fetch_row($execQuery)){
+
+			$PositionForValid=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$DefauktstatusCode=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+			}
+
+		  	$ClassConnectionDB -> Close_connection($connection);
+
+
+
+		    $NewRemarksValue=$NewRemarksValue."Back to work:".date('Y-m-d',strtotime($Data[6])).":LastUpdate-".date('Y-m-d h:m:s');
+
+		    if($whatTodo=="Insert"){
+
+		  
 		    $connection= $ClassConnectionDB -> Open_connection(1);
 
 		     $SQLstring="UPDATE Info SET Info.Billable,Info.CurrentStatus=?,Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
 ;
 			
-			if($PositionVal=$PositionforValid){
-				if($TenureStatusValid==1){
-					$Datavalue[0]="2";
-				}else{
+			if($PositionVal==$PositionForValid){
+										
 					$Datavalue[0]="1";
-				}
+			
 			}else{
 					$Datavalue[0]="2";
 			}
@@ -588,11 +894,55 @@ function  btwUpdateInfo($Data){
 
         	 $connection= $ClassConnectionDB -> Open_connection(2);
 
-        	 $SQLstring="UPDATE TB_BackToWork_Notification SET Lock=1 WHERE EmployeeID like "."'".$Data[0]."'"." AND ReturnDate="."'".date('Y-m-d',strtotime($Data[6]))."'"."";
+        	 $SQLstring="UPDATE ".$getTrackingColumn[1]." SET Lock=1 WHERE TableID=".$getTrackingColumn[0]." WHERE EmployeeID like "."'".$Data[0]."'"."";
 
         	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	  if(!odbc_error($connection)){
         	 
-        	 $returnVal=1;
+        	 $connection= $ClassConnectionDB -> Open_connection(2);
+
+        	 $SQLstring="SELECT TOP 1 EmployeeID,TableID FROM TB_BackToWork_Notification WHERE EmployeeID like "."'".$Data[0]."'"." ORDER BY DateRequest DESC"
+
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 $getTrackingToInsert[0]=date('Y-m-d h:m:s');
+
+        	 while(odbc_fetch_row($execQuery)){
+
+				$getTrackingToInsert[1]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+				$getTrackingToInsert[2]=$DefauktstatusCode;
+				$getTrackingToInsert[3]=odbc_result($execQuery, odbc_field_name($execQuery, 3));
+			}
+
+        	 $ClassConnectionDB -> Close_connection($connection);
+
+        	$connection= $ClassConnectionDB -> Open_connection(3);
+
+        	$SQLstring="INSERT INTO TB_NotificationTracking (DateTimeStamp,EmployeeID,StatusID,LastTableID) VALUES (?,?,?,?)";
+
+        	$prepExec=odbc_prepare($connection,$SQLstring);
+			   	
+        	$execQuery=odbc_execute($prepExec,$getTrackingToInsert); 
+
+        	if(!odbc_error($connection)){
+
+        		 $returnVal=1;
+        		 $ClassConnectionDB -> Close_connection($connection);
+
+        	}else{
+
+        	 return 2;
+        	 
+        	}
+
+        	}else{
+
+        	return 2;
+        	 
+        	}
+
 
            	}else{
 
@@ -600,8 +950,200 @@ function  btwUpdateInfo($Data){
            
            	}
 
-           	
+          }else{
 
+          	 $explodeRemarksVal=explode("/",$RemarksValue); 
+
+          	 $remarksPos=0;
+
+		     for($a=0;$a < count ($explodeRemarksVal);$a++){
+
+		 	 $LastUpdate="";
+        	 $LastEffectivedDate="";
+
+		 	 if($explodeRemarksVal[$a]==="Back to work:".date('Y-m-d',strtotime($LastEffectivedDate)).":LastUpdate-".date('Y-m-d h:m:s',strtotime($LastUpdate))){
+
+		 		 $remarksPos=$a;
+
+		 	 }
+		  }
+
+		   if(date('Y-m-d',strtotime($DataVal[6]))<=date('Y-m-d')){
+
+		    $connection= $ClassConnectionDB -> Open_connection(1);
+
+		 $SQLstring="UPDATE Info SET Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
+		 
+		 
+		 for($i=0;$i < count ($explodeRemarksVal);$i++){
+
+		 	if($i != $remarksPos){
+		 	
+		 	if($i==0){
+		 	$Datavalue[0]=$explodeRemarksVal[$i];
+
+		 	}else{
+		 	$Datavalue[0]=$Datavalue[0]."/".$explodeRemarksVal[$i]
+		 	}
+
+		 	}
+		 
+		 }
+
+		 if( $Datavalue[0]!="" &&  $Datavalue[0]!=null){
+		   		$Datavalue[0]=$Datavalue[0]."/";
+		 }
+		 $Datavalue[0]=$Datavalue[0].$Data[6].":".date('Y-m-d',strtotime($Data[6])).":LastUpdate-".date('Y-m-d h:m:s');
+
+		 $prepExec=odbc_prepare($connection,$SQLstring);
+			   	
+         $execQuery=odbc_execute($prepExec,$Datavalue);
+
+          if(!odbc_error($connection)){
+
+          	 $returnVal=1;
+
+          }else{
+
+          	return 2;
+
+          }
+
+		  }else if(date('Y-m-d',strtotime($DataVal[6])) > date('Y-m-d')){
+
+
+		  $SQLstring="WITH T AS (SELECT TOP 1 * FROM TB_NotificationTracking WHERE EmployeeID like "."'".$Data[0]."'"." ORDER BY DateTimeStamp DESC) DELETE FROM T";
+
+          $connection= $ClassConnectionDB -> Open_connection(3);
+
+          $execQuery=odbc_exec($connection, $SQLstring);
+
+          if(!odbc_error($connection)){
+
+          $ClassConnectionDB -> Close_connection($connection);
+
+          $getTheLatestNotifData[]=null;
+
+  
+
+           	$SQLstring="SELECT TOP 1 b.Stat_Remarks,d.PositionCategoryVal FROM TB_NotificationTracking a JOIN DB_Employee_Management_System.dbo.TB_Status b ON a.StatusID=b.Stat_Num JOIN DB_Employee_Management_System.dbo.TB_Information c ON a.EmployeeID=c.EmployeeID JOIN DB_Employee_Management_System.dbo.TB_PositionCategory d ON c.Position=d.Code WHERE a.EmployeeID like "."'".$Data[0]."'"." ORDER BY a.DateTimeStamp DESC";
+
+           
+
+           
+
+           $connection= $ClassConnectionDB -> Open_connection(3);
+
+           $execQuery=odbc_exec($connection, $SQLstring);
+
+            while(odbc_fetch_row($execQuery)){
+
+			$getTheLatestNotifData[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$getTheLatestNotifData[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+			}
+
+		  $ClassConnectionDB -> Close_connection($connection);
+
+
+
+		  $connection= $ClassConnectionDB -> Open_connection(1);
+
+			$SQLstring="UPDATE Info SET Info.Billable=?,Info.CurrentStatus=?,Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
+
+
+			if($getTheLatestNotifData[0]=="Active"){
+
+				if($getTheLatestNotifData[1]==$_SESSION['defaultPosition']){
+				$Datavalue[0]="1";
+				}else{
+				$Datavalue[0]="2";
+				}
+
+			}else{
+
+				$Datavalue[0]="2";
+			}
+			
+			$Datavalue[1]=$getTheLatestNotifData[0];
+
+			
+			for($i=0;$i < count ($explodeRemarksVal);$i++){
+
+		 	if($i != $remarksPos){
+		 	
+		 	if($i==0){
+		 	$Datavalue[2]=$explodeRemarksVal[$i];
+
+		 	}else{
+		 	$Datavalue[2]=$Datavalue[2]."/".$explodeRemarksVal[$i]
+		 	}
+
+		 	}
+		 
+		 	}
+
+		 if( $Datavalue[2]=="" &&  $Datavalue[2]==null){
+		   		$Datavalue[2]="";
+		 }
+		
+		  $prepExec=odbc_prepare($connection,$SQLstring);
+			   	
+          $execQuery=odbc_execute($prepExec,$Datavalue);
+
+          if(!odbc_error($connection)){
+          
+           $ClassConnectionDB -> Close_connection($connection);
+
+           $connection= $ClassConnectionDB -> Open_connection(3);
+
+           $SQLstring="SELECT TOP 1 a.LastTableID,b.Table_Name FROM TB_NotificationTracking a JOIN TB_TableLinkNotification b ON a.StatusID=b.Stat_Num WHERE a.EmployeeID like "."'".$Data[0]."'"." ORDER BY DateTimeStamp DESC";
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 $getTrackingColumn2[]=null;
+        	 
+        	 while(odbc_fetch_row($execQuery)){
+
+				$getTrackingColumn2[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+				$getTrackingColumn2[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+
+			}
+
+			 $ClassConnectionDB -> Close_connection($connection);
+
+
+			 $connection= $ClassConnectionDB -> Open_connection(2);
+
+        	 $SQLstring="UPDATE ".$getTrackingColumn2[1]." SET Lock=0 WHERE TableID=".$getTrackingColumn2[0]." WHERE EmployeeID like "."'".$Data[0]."'"."";
+
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+          if(!odbc_error($connection)){
+
+          	$returnVal=1;
+
+          }else{
+
+           return 2;
+          }
+
+          }else{
+
+           return 2;
+          }
+
+          }else{
+
+           return 2;
+
+          }
+
+
+		  }
+
+	
+		}
 	
 
 	return $returnVal;
@@ -618,15 +1160,39 @@ function autoseperationUpdateInfo($Data,$statcode){
         	$returnVal=0;
         	$Datavalue[]=null;
 
-        	$connection= $ClassConnectionDB -> Open_connection(1);
-        	$SQLstring="SELECT a.HistoryRemarks FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID JOIN TB_PositionCategory c ON a.Position=c.Code WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	$LastUpdate="";
+        	$LastEffectivedDate="";
 
-        	$execQuery=odbc_exec($connection, $SQLstring);
-        	if(!odbc_error($connection)){
+        	$getTrackingColumn[]=null;
+
+        	$connection= $ClassConnectionDB -> Open_connection(3);
+
+        	 $SQLstring="SELECT TOP 1 a.LastTableID,b.Table_Name,c.Stat_Category FROM TB_NotificationTracking a JOIN TB_TableLinkNotification b ON a.StatusID=b.Stat_Num JOIN DB_Employee_Management_System.dbo.TB_Status c ON a.StatusID=c.Stat_Num WHERE a.EmployeeID like "."'".$Data[0]."'"." ORDER BY DateTimeStamp DESC";
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	
+
+        	 while(odbc_fetch_row($execQuery)){
+
+				$getTrackingColumn[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+				$getTrackingColumn[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+				$getTrackingColumn[2]=odbc_result($execQuery, odbc_field_name($execQuery, 3));
+			}
+
+
+			$ClassConnectionDB -> Close_connection($connection);
+
+			$connection= $ClassConnectionDB -> Open_connection(1);
+			$SQLstring="SELECT a.HistoryRemarks,c.EffectiveDate,c.LastUpdate FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID LEFT JOIN DB_Employee_Management_System_Notification.dbo.".$getTrackingColumn[1]." c ON b.EmployeeID=c.EmployeeID WHERE b.EmployeeID like "."'".$Data[0]."'"." AND c.TableID=".$getTrackingColumn[0]."";
+
+			$execQuery=odbc_exec($connection, $SQLstring);
+			if(!odbc_error($connection)){
 			while(odbc_fetch_row($execQuery)){
 
-			$RemarksValue=$fieldValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
-			
+			$RemarksValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$LastEffectivedDate=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+			$LastUpdate=odbc_result($execQuery, odbc_field_name($execQuery, 3));
 
 			}
 			}else{
@@ -642,74 +1208,385 @@ function autoseperationUpdateInfo($Data,$statcode){
 		   		  $NewRemarksValue=$RemarksValue."/";
 		   }
 
-		      $NewRemarksValue=$NewRemarksValue."Terminated-".$Data[6];
 
-		    $connection= $ClassConnectionDB -> Open_connection(1);
 
-		     $SQLstring="UPDATE Info SET Info.Billable,Info.CurrentStatus=?,Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
+		   $NewRemarksValue=$NewRemarksValue.$Data[6].":".date('Y-m-d',strtotime($Data[5])).":LastUpdate-".date('Y-m-d h:m:s');
+
+		   if($whatTodo=="Insert"){
+
+
+		  $connection= $ClassConnectionDB -> Open_connection(1);
+
+		  $SQLstring="UPDATE Info SET Info.Billable=?,Info.CurrentStatus=?,Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
 ;
 			
-		
 			$Datavalue[0]="2";
 			$Datavalue[1]=$Data[6];
 			$Datavalue[2]=$NewRemarksValue;
 			
 			$prepExec=odbc_prepare($connection,$SQLstring);
-		
-   	
+			   	
         	$execQuery=odbc_execute($prepExec,$Datavalue);
 
         	if(!odbc_error($connection)){
            	
         	 $ClassConnectionDB -> Close_connection($connection);
 
-        	 $connection= $ClassConnectionDB -> Open_connection(2);
-
-        	 $SQLstring="UPDATE TB_autoSeparate_Notification SET Lock=1,LastUpdate="."'".date('Y-m-d h:m:s')."'"." WHERE EmployeeID like "."'".$Data[0]."'"." AND EffectiveDate="."'".date('Y-m-d',strtotime($Data[5]))."'"." AND StatusCode=".$statcode."";
-
-        	 $execQuery=odbc_exec($connection, $SQLstring);
         	
 
-        	 	 $ClassConnectionDB -> Close_connection($connection);
-        	 	 
+			 $connection= $ClassConnectionDB -> Open_connection(2);
+
+        	 $SQLstring="UPDATE ".$getTrackingColumn[1]." SET Lock=1 WHERE TableID=".$getTrackingColumn[0]." WHERE EmployeeID like "."'".$Data[0]."'"."";
+
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	  if(!odbc_error($connection)){
+        	 
+        	 $connection= $ClassConnectionDB -> Open_connection(2);
+
+        	 $SQLstring="SELECT TOP 1 EmployeeID,StatusCode,TableID FROM TB_autoSeparate_Notification WHERE EmployeeID like "."'".$Data[0]."'"." ORDER BY DateRequest DESC"
+
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 $getTrackingToInsert[0]=date('Y-m-d h:m:s');
+
+        	 while(odbc_fetch_row($execQuery)){
+
+				$getTrackingToInsert[1]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+				$getTrackingToInsert[2]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+				$getTrackingToInsert[3]=odbc_result($execQuery, odbc_field_name($execQuery, 3));
+			}
+
+        	 $ClassConnectionDB -> Close_connection($connection);
+
+        	$connection= $ClassConnectionDB -> Open_connection(3);
+
+        	$SQLstring="INSERT INTO TB_NotificationTracking (DateTimeStamp,EmployeeID,StatusID,LastTableID) VALUES (?,?,?,?)";
+
+        	$prepExec=odbc_prepare($connection,$SQLstring);
+			   	
+        	$execQuery=odbc_execute($prepExec,$getTrackingToInsert); 
+
+        	if(!odbc_error($connection)){
+
+        	
+        		 $ClassConnectionDB -> Close_connection($connection);
+
         	 	  $connection= $ClassConnectionDB -> Open_connection(1);
 
         	 	  $SQLstring="DELETE a FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
-        	 		 $execQuery=odbc_exec($connection, $SQLstring);
-        	 		  $ClassConnectionDB -> Close_connection($connection);
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
 
-        	 		  $connection= $ClassConnectionDB -> Open_connection(1);
-        	 		  $SQLstring="DELETE a FROM TB_Hierarchy a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
-        	 		 $execQuery=odbc_exec($connection, $SQLstring);
-        	 		 $ClassConnectionDB -> Close_connection($connection);
+        	 	  if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
 
-        	 		  $connection= $ClassConnectionDB -> Open_connection(1);
-        	 		  $SQLstring="DELETE a FROM TB_Credentials a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
-        	 		 $execQuery=odbc_exec($connection, $SQLstring);
-        	 		 $ClassConnectionDB -> Close_connection($connection);
+        	 	  $ClassConnectionDB -> Close_connection($connection);
 
-        	 		  $connection= $ClassConnectionDB -> Open_connection(1);
-        	 		  $SQLstring="DELETE a FROM TB_ProfilePhoto a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
-        	 		 $execQuery=odbc_exec($connection, $SQLstring);
-        	 		 $ClassConnectionDB -> Close_connection($connection);
+        	 	  $connection= $ClassConnectionDB -> Open_connection(1);
+        	 	  $SQLstring="DELETE a FROM TB_Hierarchy a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
 
-        	 		 $connection= $ClassConnectionDB -> Open_connection(1);
-        	 		  $SQLstring="DELETE FROM TB_Information WHERE EmployeeID like "."'".$Data[0]."'"."";
-        	 		 $execQuery=odbc_exec($connection, $SQLstring);
-        	 		 $ClassConnectionDB -> Close_connection($connection);
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(1);
+        	 	  $SQLstring="DELETE a FROM TB_Credentials a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(1);
+        	 	  $SQLstring="DELETE a FROM TB_ProfilePhoto a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(1);
+        	 	  $SQLstring="DELETE FROM TB_Information WHERE EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
 
 
-        	 	  	$returnVal=1;
+        	 	  $returnVal=1;
         	
 
-         	
+        	}else{
 
+        	 return 2;
+        	 
+        	}
+
+        	}else{
+
+        	return 2;
+        	 
+        	}
+
+ 
            	}else{
 
            	return 2;
            
            	}
 
+
+         }else{
+
+         $explodeRemarksVal=explode("/",$RemarksValue); 
+
+		 $remarksPos=0;
+
+		 for($a=0;$a < count ($explodeRemarksVal);$a++){
+
+		 	$LastUpdate="";
+        	$LastEffectivedDate="";
+
+		 	if($explodeRemarksVal[$a]===$Data[6].":".date('Y-m-d',strtotime($LastEffectivedDate)).":LastUpdate-".date('Y-m-d h:m:s',strtotime($LastUpdate))){
+
+		 		 $remarksPos=$a;
+
+		 	}
+		 }
+		 	
+		 if(date('Y-m-d',strtotime($DataVal[8]))<=date('Y-m-d')){
+ 				
+		 $connection= $ClassConnectionDB -> Open_connection(4);
+
+		 $SQLstring="UPDATE Info SET Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
+		 
+		 
+		 for($i=0;$i < count ($explodeRemarksVal);$i++){
+
+		 	if($i != $remarksPos){
+		 	
+		 	if($i==0){
+		 	$Datavalue[0]=$explodeRemarksVal[$i];
+
+		 	}else{
+		 	$Datavalue[0]=$Datavalue[0]."/".$explodeRemarksVal[$i]
+		 	}
+
+		 	}
+		 
+		 }
+
+		 if( $Datavalue[0]!="" &&  $Datavalue[0]!=null){
+		   		$Datavalue[0]=$Datavalue[0]."/";
+		 }
+		 $Datavalue[0]=$Datavalue[0].$Data[6].":".date('Y-m-d',strtotime($Data[5])).":LastUpdate-".date('Y-m-d h:m:s');
+
+		 $prepExec=odbc_prepare($connection,$SQLstring);
+			   	
+         $execQuery=odbc_execute($prepExec,$Datavalue);
+
+          if(!odbc_error($connection)){
+
+          	 $returnVal=1;
+
+          }else{
+
+          	return 2;
+
+          }
+
+ 		 }else if(date('Y-m-d',strtotime($DataVal[8])) > date('Y-m-d')){
+            
+          $SQLstring="WITH T AS (SELECT TOP 1 * FROM TB_NotificationTracking WHERE EmployeeID like "."'".$Data[0]."'"." ORDER BY DateTimeStamp DESC) DELETE FROM T";
+
+          $connection= $ClassConnectionDB -> Open_connection(3);
+
+          $execQuery=odbc_exec($connection, $SQLstring);
+
+          if(!odbc_error($connection)){
+
+          $ClassConnectionDB -> Close_connection($connection);
+
+          $getTheLatestNotifData[]=null;
+
+            
+
+           	$SQLstring="SELECT TOP 1 b.Stat_Remarks,d.PositionCategoryVal FROM TB_NotificationTracking a JOIN DB_Employee_Management_System.dbo.TB_Status b ON a.StatusID=b.Stat_Num JOIN DB_Employee_Management_System.dbo.TB_Information c ON a.EmployeeID=c.EmployeeID JOIN DB_Employee_Management_System.dbo.TB_PositionCategory d ON c.Position=d.Code WHERE a.EmployeeID like "."'".$Data[0]."'"." ORDER BY a.DateTimeStamp DESC";
+
+        
+           $connection= $ClassConnectionDB -> Open_connection(3);
+
+           $execQuery=odbc_exec($connection, $SQLstring);
+
+            while(odbc_fetch_row($execQuery)){
+
+			$getTheLatestNotifData[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$getTheLatestNotifData[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+			}
+
+		  $ClassConnectionDB -> Close_connection($connection);
+
+
+
+		  $connection= $ClassConnectionDB -> Open_connection(4);
+
+
+			$SQLstring="UPDATE Info SET Info.Billable=?,Info.CurrentStatus=?,Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
+
+
+			if($getTheLatestNotifData[0]=="Active"){
+
+				if($getTheLatestNotifData[1]==$_SESSION['defaultPosition']){
+				$Datavalue[0]="1";
+				}else{
+				$Datavalue[0]="2";
+				}
+
+			}else{
+
+				$Datavalue[0]="2";
+			}
+			
+			$Datavalue[1]=$getTheLatestNotifData[0];
+
+			
+			for($i=0;$i < count ($explodeRemarksVal);$i++){
+
+		 	if($i != $remarksPos){
+		 	
+		 	if($i==0){
+		 	$Datavalue[2]=$explodeRemarksVal[$i];
+
+		 	}else{
+		 	$Datavalue[2]=$Datavalue[2]."/".$explodeRemarksVal[$i]
+		 	}
+
+		 	}
+		 
+		 	}
+
+		 if( $Datavalue[2]=="" &&  $Datavalue[2]==null){
+		   		$Datavalue[2]="";
+		 }
+		
+			$prepExec=odbc_prepare($connection,$SQLstring);
+			   	
+        	$execQuery=odbc_execute($prepExec,$Datavalue);
+
+          if(!odbc_error($connection)){
+          
+           $ClassConnectionDB -> Close_connection($connection);
+
+           $connection= $ClassConnectionDB -> Open_connection(3);
+
+        	 $SQLstring="SELECT TOP 1 a.LastTableID,b.Table_Name FROM TB_NotificationTracking a JOIN TB_TableLinkNotification b ON a.StatusID=b.Stat_Num WHERE a.EmployeeID like "."'".$Data[0]."'"." ORDER BY DateTimeStamp DESC";
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 $getTrackingColumn2[]=null;
+        	 
+        	 while(odbc_fetch_row($execQuery)){
+
+				$getTrackingColumn2[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+				$getTrackingColumn2[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+
+			}
+
+			 $ClassConnectionDB -> Close_connection($connection);
+
+
+			 $connection= $ClassConnectionDB -> Open_connection(2);
+
+        	 $SQLstring="UPDATE ".$getTrackingColumn2[1]." SET Lock=0 WHERE TableID=".$getTrackingColumn2[0]." WHERE EmployeeID like "."'".$Data[0]."'"."";
+
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+          if(!odbc_error($connection)){
+
+
+          	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(4);
+
+        	 	  $SQLstring="DELETE a FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	  if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(4);
+        	 	  $SQLstring="DELETE a FROM TB_Hierarchy a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(4);
+        	 	  $SQLstring="DELETE a FROM TB_Credentials a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(4);
+        	 	  $SQLstring="DELETE a FROM TB_ProfilePhoto a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  
+
+
+        	 	  $returnVal=1;
+          
+
+          }else{
+
+           return 2;
+          }
+
+          }else{
+
+           return 2;
+          }
+
+          }else{
+
+           return 2;
+          }
+
+
+
+        }
+
+      }
            	
        
 	
@@ -729,18 +1606,41 @@ function ResignationUpdateInfo($Data){
         	$returnVal=0;
         	$Datavalue[]=null;
 
-        	$connection= $ClassConnectionDB -> Open_connection(1);
-        	$SQLstring="SELECT a.HistoryRemarks FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID JOIN TB_PositionCategory c ON a.Position=c.Code WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	$LastUpdate="";
+        	$LastEffectivedDate="";
 
-        	$execQuery=odbc_exec($connection, $SQLstring);
-        	if(!odbc_error($connection)){
-			while(odbc_fetch_row($execQuery)){
+        	$getTrackingColumn[]=null;
 
-			$RemarksValue=$fieldValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
-			
+        	$connection= $ClassConnectionDB -> Open_connection(3);
 
+        	 $SQLstring="SELECT TOP 1 a.LastTableID,b.Table_Name,c.Stat_Category FROM TB_NotificationTracking a JOIN TB_TableLinkNotification b ON a.StatusID=b.Stat_Num JOIN DB_Employee_Management_System.dbo.TB_Status c ON a.StatusID=c.Stat_Num WHERE a.EmployeeID like "."'".$Data[0]."'"." ORDER BY DateTimeStamp DESC";
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	
+
+        	 while(odbc_fetch_row($execQuery)){
+
+				$getTrackingColumn[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+				$getTrackingColumn[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+				$getTrackingColumn[2]=odbc_result($execQuery, odbc_field_name($execQuery, 3));
 			}
 
+
+			$ClassConnectionDB -> Close_connection($connection);
+
+			$connection= $ClassConnectionDB -> Open_connection(1);
+			$SQLstring="SELECT a.HistoryRemarks,c.EffectiveDate,c.LastUpdate FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID LEFT JOIN DB_Employee_Management_System_Notification.dbo.".$getTrackingColumn[1]." c ON b.EmployeeID=c.EmployeeID WHERE b.EmployeeID like "."'".$Data[0]."'"." AND c.TableID=".$getTrackingColumn[0]."";
+
+			$execQuery=odbc_exec($connection, $SQLstring);
+			if(!odbc_error($connection)){
+			while(odbc_fetch_row($execQuery)){
+
+			$RemarksValue=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$LastEffectivedDate=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+			$LastUpdate=odbc_result($execQuery, odbc_field_name($execQuery, 3));
+
+			}
 			}else{
 
            	return 2;
@@ -754,84 +1654,395 @@ function ResignationUpdateInfo($Data){
 		   		  $NewRemarksValue=$RemarksValue."/";
 		   }
 
-		      $NewRemarksValue=$NewRemarksValue."Resignation-".$Data[6];
 
-		    $connection= $ClassConnectionDB -> Open_connection(1);
 
-		     $SQLstring="UPDATE Info SET Info.Billable,Info.CurrentStatus=?,Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
+		   $NewRemarksValue=$NewRemarksValue."Resigned:".date('Y-m-d',strtotime($Data[6])).":LastUpdate-".date('Y-m-d h:m:s');
+
+		   if($whatTodo=="Insert"){
+
+
+		  $connection= $ClassConnectionDB -> Open_connection(1);
+
+		  $SQLstring="UPDATE Info SET Info.Billable=?,Info.CurrentStatus=?,Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
 ;
 			
-		
 			$Datavalue[0]="2";
 			$Datavalue[1]="Resigned";
 			$Datavalue[2]=$NewRemarksValue;
 			
 			$prepExec=odbc_prepare($connection,$SQLstring);
-			
-   	
+			   	
         	$execQuery=odbc_execute($prepExec,$Datavalue);
 
         	if(!odbc_error($connection)){
            	
         	 $ClassConnectionDB -> Close_connection($connection);
 
-        	 $connection= $ClassConnectionDB -> Open_connection(2);
-
-        	 $SQLstring="UPDATE TB_Resignation_Notification SET Lock=1,LastUpdate="."'".date('Y-m-d h:m:s')."'"." WHERE EmployeeID like "."'".$Data[0]."'"." AND EffectiveDate="."'".date('Y-m-d',strtotime($Data[6]))."'"." AND Date_Received=".$statcode."'".date('Y-m-d',strtotime($Data[4]))."'"."";
-
-        	 $execQuery=odbc_exec($connection, $SQLstring);
         	
 
-        	 	 $ClassConnectionDB -> Close_connection($connection);
-        	 	 
+			 $connection= $ClassConnectionDB -> Open_connection(2);
+
+        	 $SQLstring="UPDATE ".$getTrackingColumn[1]." SET Lock=1 WHERE TableID=".$getTrackingColumn[0]." WHERE EmployeeID like "."'".$Data[0]."'"."";
+
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	  if(!odbc_error($connection)){
+        	 
+        	 $connection= $ClassConnectionDB -> Open_connection(2);
+
+        	 $SQLstring="SELECT TOP 1 EmployeeID,StatusCode,TableID FROM TB_autoSeparate_Notification WHERE EmployeeID like "."'".$Data[0]."'"." ORDER BY DateRequest DESC"
+
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 $getTrackingToInsert[0]=date('Y-m-d h:m:s');
+
+        	 while(odbc_fetch_row($execQuery)){
+
+				$getTrackingToInsert[1]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+				$getTrackingToInsert[2]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+				$getTrackingToInsert[3]=odbc_result($execQuery, odbc_field_name($execQuery, 3));
+			}
+
+        	 $ClassConnectionDB -> Close_connection($connection);
+
+        	$connection= $ClassConnectionDB -> Open_connection(3);
+
+        	$SQLstring="INSERT INTO TB_NotificationTracking (DateTimeStamp,EmployeeID,StatusID,LastTableID) VALUES (?,?,?,?)";
+
+        	$prepExec=odbc_prepare($connection,$SQLstring);
+			   	
+        	$execQuery=odbc_execute($prepExec,$getTrackingToInsert); 
+
+        	if(!odbc_error($connection)){
+
+        	
+        		 $ClassConnectionDB -> Close_connection($connection);
+
         	 	  $connection= $ClassConnectionDB -> Open_connection(1);
 
         	 	  $SQLstring="DELETE a FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
-        	 		 $execQuery=odbc_exec($connection, $SQLstring);
-        	 		  $ClassConnectionDB -> Close_connection($connection);
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
 
-        	 		  $connection= $ClassConnectionDB -> Open_connection(1);
-        	 		  $SQLstring="DELETE a FROM TB_Hierarchy a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
-        	 		 $execQuery=odbc_exec($connection, $SQLstring);
-        	 		 $ClassConnectionDB -> Close_connection($connection);
+        	 	  if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
 
-        	 		  $connection= $ClassConnectionDB -> Open_connection(1);
-        	 		  $SQLstring="DELETE a FROM TB_Credentials a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
-        	 		 $execQuery=odbc_exec($connection, $SQLstring);
-        	 		 $ClassConnectionDB -> Close_connection($connection);
+        	 	  $ClassConnectionDB -> Close_connection($connection);
 
-        	 		  $connection= $ClassConnectionDB -> Open_connection(1);
-        	 		  $SQLstring="DELETE a FROM TB_ProfilePhoto a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
-        	 		 $execQuery=odbc_exec($connection, $SQLstring);
-        	 		 $ClassConnectionDB -> Close_connection($connection);
+        	 	  $connection= $ClassConnectionDB -> Open_connection(1);
+        	 	  $SQLstring="DELETE a FROM TB_Hierarchy a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
 
-        	 		 $connection= $ClassConnectionDB -> Open_connection(1);
-        	 		  $SQLstring="DELETE FROM TB_Information WHERE EmployeeID like "."'".$Data[0]."'"."";
-        	 		 $execQuery=odbc_exec($connection, $SQLstring);
-        	 		 $ClassConnectionDB -> Close_connection($connection);
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(1);
+        	 	  $SQLstring="DELETE a FROM TB_Credentials a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(1);
+        	 	  $SQLstring="DELETE a FROM TB_ProfilePhoto a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(1);
+        	 	  $SQLstring="DELETE FROM TB_Information WHERE EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
 
 
-        	 	  	$returnVal=1;
-        
+        	 	  $returnVal=1;
+        	
 
+        	}else{
+
+        	 return 2;
+        	 
+        	}
+
+        	}else{
+
+        	return 2;
+        	 
+        	}
+
+ 
            	}else{
 
            	return 2;
            
            	}
 
+
+         }else{
+
+         $explodeRemarksVal=explode("/",$RemarksValue); 
+
+		 $remarksPos=0;
+
+		 for($a=0;$a < count ($explodeRemarksVal);$a++){
+
+		 	$LastUpdate="";
+        	$LastEffectivedDate="";
+
+		 	if($explodeRemarksVal[$a]===$Data[6].":".date('Y-m-d',strtotime($LastEffectivedDate)).":LastUpdate-".date('Y-m-d h:m:s',strtotime($LastUpdate))){
+
+		 		 $remarksPos=$a;
+
+		 	}
+		 }
+		 	
+		 if(date('Y-m-d',strtotime($DataVal[8]))<=date('Y-m-d')){
+ 				
+		 $connection= $ClassConnectionDB -> Open_connection(4);
+
+		 $SQLstring="UPDATE Info SET Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
+		 
+		 
+		 for($i=0;$i < count ($explodeRemarksVal);$i++){
+
+		 	if($i != $remarksPos){
+		 	
+		 	if($i==0){
+		 	$Datavalue[0]=$explodeRemarksVal[$i];
+
+		 	}else{
+		 	$Datavalue[0]=$Datavalue[0]."/".$explodeRemarksVal[$i]
+		 	}
+
+		 	}
+		 
+		 }
+
+		 if( $Datavalue[0]!="" &&  $Datavalue[0]!=null){
+		   		$Datavalue[0]=$Datavalue[0]."/";
+		 }
+		 $Datavalue[0]=$Datavalue[0]."Resigned:".date('Y-m-d',strtotime($Data[5])).":LastUpdate-".date('Y-m-d h:m:s');
+
+		 $prepExec=odbc_prepare($connection,$SQLstring);
+			   	
+         $execQuery=odbc_execute($prepExec,$Datavalue);
+
+          if(!odbc_error($connection)){
+
+          	 $returnVal=1;
+
+          }else{
+
+          	return 2;
+
+          }
+
+ 		 }else if(date('Y-m-d',strtotime($DataVal[8])) > date('Y-m-d')){
+            
+          $SQLstring="WITH T AS (SELECT TOP 1 * FROM TB_NotificationTracking WHERE EmployeeID like "."'".$Data[0]."'"." ORDER BY DateTimeStamp DESC) DELETE FROM T";
+
+          $connection= $ClassConnectionDB -> Open_connection(3);
+
+          $execQuery=odbc_exec($connection, $SQLstring);
+
+          if(!odbc_error($connection)){
+
+          $ClassConnectionDB -> Close_connection($connection);
+
+          $getTheLatestNotifData[]=null;
+
+            
+
+           	$SQLstring="SELECT TOP 1 b.Stat_Remarks,d.PositionCategoryVal FROM TB_NotificationTracking a JOIN DB_Employee_Management_System.dbo.TB_Status b ON a.StatusID=b.Stat_Num JOIN DB_Employee_Management_System.dbo.TB_Information c ON a.EmployeeID=c.EmployeeID JOIN DB_Employee_Management_System.dbo.TB_PositionCategory d ON c.Position=d.Code WHERE a.EmployeeID like "."'".$Data[0]."'"." ORDER BY a.DateTimeStamp DESC";
+
+        
+           $connection= $ClassConnectionDB -> Open_connection(3);
+
+           $execQuery=odbc_exec($connection, $SQLstring);
+
+            while(odbc_fetch_row($execQuery)){
+
+			$getTheLatestNotifData[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+			$getTheLatestNotifData[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+			}
+
+		  $ClassConnectionDB -> Close_connection($connection);
+
+
+
+		  $connection= $ClassConnectionDB -> Open_connection(4);
+
+
+			$SQLstring="UPDATE Info SET Info.Billable=?,Info.CurrentStatus=?,Info.HistoryRemarks=? FROM (SELECT a.EmployeeID,b.Billable,b.CurrentStatus,b.HistoryRemarks FROM TB_Information a JOIN  TB_State b ON a.TableID=b.TableID) as Info WHERE Info.EmployeeID like "."'".$Data[0]."'"."";
+
+
+			if($getTheLatestNotifData[0]=="Active"){
+
+				if($getTheLatestNotifData[1]==$_SESSION['defaultPosition']){
+				$Datavalue[0]="1";
+				}else{
+				$Datavalue[0]="2";
+				}
+
+			}else{
+
+				$Datavalue[0]="2";
+			}
+			
+			$Datavalue[1]=$getTheLatestNotifData[0];
+
+			
+			for($i=0;$i < count ($explodeRemarksVal);$i++){
+
+		 	if($i != $remarksPos){
+		 	
+		 	if($i==0){
+		 	$Datavalue[2]=$explodeRemarksVal[$i];
+
+		 	}else{
+		 	$Datavalue[2]=$Datavalue[2]."/".$explodeRemarksVal[$i]
+		 	}
+
+		 	}
+		 
+		 	}
+
+		 if( $Datavalue[2]=="" &&  $Datavalue[2]==null){
+		   		$Datavalue[2]="";
+		 }
+		
+			$prepExec=odbc_prepare($connection,$SQLstring);
+			   	
+        	$execQuery=odbc_execute($prepExec,$Datavalue);
+
+          if(!odbc_error($connection)){
+          
+           $ClassConnectionDB -> Close_connection($connection);
+
+           $connection= $ClassConnectionDB -> Open_connection(3);
+
+        	 $SQLstring="SELECT TOP 1 a.LastTableID,b.Table_Name FROM TB_NotificationTracking a JOIN TB_TableLinkNotification b ON a.StatusID=b.Stat_Num WHERE a.EmployeeID like "."'".$Data[0]."'"." ORDER BY DateTimeStamp DESC";
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 $getTrackingColumn2[]=null;
+        	 
+        	 while(odbc_fetch_row($execQuery)){
+
+				$getTrackingColumn2[0]=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+				$getTrackingColumn2[1]=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+
+			}
+
+			 $ClassConnectionDB -> Close_connection($connection);
+
+
+			 $connection= $ClassConnectionDB -> Open_connection(2);
+
+        	 $SQLstring="UPDATE ".$getTrackingColumn2[1]." SET Lock=0 WHERE TableID=".$getTrackingColumn2[0]." WHERE EmployeeID like "."'".$Data[0]."'"."";
+
+
+        	 $execQuery=odbc_exec($connection, $SQLstring);
+
+          if(!odbc_error($connection)){
+
+
+          	 	  $ClassConnectionDB -> Close_connection($connection);
+          	 	  
+        	 	  $connection= $ClassConnectionDB -> Open_connection(4);
+
+        	 	  $SQLstring="DELETE a FROM TB_State a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	  if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(4);
+        	 	  $SQLstring="DELETE a FROM TB_Hierarchy a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(4);
+        	 	  $SQLstring="DELETE a FROM TB_Credentials a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  $connection= $ClassConnectionDB -> Open_connection(4);
+        	 	  $SQLstring="DELETE a FROM TB_ProfilePhoto a JOIN TB_Information b ON a.TableID=b.TableID WHERE b.EmployeeID like "."'".$Data[0]."'"."";
+        	 	  $execQuery=odbc_exec($connection, $SQLstring);
+
+        	 	   if(!odbc_error($connection)){
+        	 	  	return 2;
+        	 	  }
+
+        	 	  $ClassConnectionDB -> Close_connection($connection);
+
+        	 	  
+
+
+        	 	  $returnVal=1;
           
 
+          }else{
 
+           return 2;
+          }
+
+          }else{
+
+           return 2;
+          }
+
+          }else{
+
+           return 2;
+          }
+
+
+
+        }
+
+      }
+           	
+       
 	
 
 	return $returnVal;
+
+
+
 }
 
-
-
-
 }
-
 
 ?>

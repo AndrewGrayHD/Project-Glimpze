@@ -50,7 +50,26 @@ $SuccessFullyLogin=TRUE;
 
 }
 
+$ClassConnection -> Close_connection($connection);	
+
 if ($SuccessFullyLogin){
+
+	//initial Data
+
+	$connection= $ClassConnection -> Open_connection(1);
+	$SQLstring="SELECT PositionBillable,statusDefault FROM TB_DefaultValues";
+
+	$execQuery=odbc_exec($connection, $SQLstring);
+
+	while(odbc_fetch_row($execQuery)){
+
+	$_SESSION['defaultPosition']=odbc_result($execQuery, odbc_field_name($execQuery, 1));
+	$_SESSION['defaultStat']=odbc_result($execQuery, odbc_field_name($execQuery, 2));
+
+	}
+
+	$ClassConnection -> Close_connection($connection);	
+
 
 	//mslt.php ini
 	$_SESSION['msltDatable']=null;

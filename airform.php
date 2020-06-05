@@ -1161,7 +1161,7 @@
                                         
                                      }else if(successfullySaved==3){
 
-                                        alert("Notification was already exist");
+                                         alert("Can't save and send notification, maybe it already exist or in pending status");
 
                                     }else{
 

@@ -529,7 +529,7 @@ function backtoworkSaving($DataVal,$whatTodo){
 
             $Validationconnection= $ClassConnection -> Open_connection(2);
 
-            $SQLstring="SELECT * FROM TB_BackToWork_Notification WHERE EmployeeID like "."'".$DataVal[0]."'"." AND Remarks like "."'".$DataVal[7]."'"." AND ReturnDate="."'".date('Y-m-d',strtotime($DataVal[6]))."'"."";
+            $SQLstring="SELECT * FROM TB_BackToWork_Notification WHERE EmployeeID like "."'".$DataVal[0]."'"." AND Remarks like "."'".$DataVal[7]."'"." AND EffectiveDate="."'".date('Y-m-d',strtotime($DataVal[6]))."'"."";
 
             $AlreadyExist=false;
 
@@ -553,7 +553,7 @@ function backtoworkSaving($DataVal,$whatTodo){
             if($connection){
 
 
-            $SQLstring="INSERT INTO TB_BackToWork_Notification (DateRequest,EmployeeID,ReturnDate,SenderEmpID,Remarks,LastUpdate,Lock) VALUES(?,?,?,?,?,?,?)";
+            $SQLstring="INSERT INTO TB_BackToWork_Notification (DateRequest,EmployeeID,EffectiveDate,SenderEmpID,Remarks,LastUpdate,Lock) VALUES(?,?,?,?,?,?,?)";
             
 
             $setValue[0]=date('Y-m-d h:m:s');
@@ -798,9 +798,11 @@ function savingAir($DataVal,$Ref,$whatTodo){
             if(date('Y-m-d',strtotime($DataVal[8]))===date('Y-m-d')){
 
 
-                 $returnVal=$UpdateInfo -> AirUpdateInfo($DataVal,$statCode);
+                 $returnVal=$UpdateInfo -> AirUpdateInfo($DataVal,$statCode,$whatTodo);
+
             }else{
-                   $returnVal=1;
+                
+                 $returnVal=1;
             }
 
         }else{
@@ -884,26 +886,21 @@ function savingAir($DataVal,$Ref,$whatTodo){
             }
        
             
-        $prepExec=odbc_prepare($connection,$SQLstring);
+             $prepExec=odbc_prepare($connection,$SQLstring);
 
-        
-  
              $execQuery=odbc_execute($prepExec,$setValue);
 
             if(!odbc_error($execQuery)){
                 $rowAffected=@odbc_num_rows($prepExec);
 
         
-            if( $rowAffected > 0){
+        
+        if( $rowAffected > 0){
           
             
-            if(date('Y-m-d',strtotime($DataVal[8]))===date('Y-m-d')){
+        $returnVal=$UpdateInfo -> AirUpdateInfo($DataVal,$statCode,$whatTodo);
 
-
-                  $returnVal=$UpdateInfo -> AirUpdateInfo($DataVal,$statCode);
-            }else{
-                   $returnVal=1;
-            }
+           
 
         }else{
 
