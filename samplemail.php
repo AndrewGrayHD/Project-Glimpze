@@ -1,9 +1,10 @@
 <?php
-$to = "somebody@example.com";
-$subject = "My subject";
-$txt = "Hello world!";
-$headers = "From: webmaster@example.com" . "\r\n" .
-"CC: somebodyelse@example.com";
+date_default_timezone_set('Asia/Manila');
 
-mail($to,$subject,$txt,$headers);
-?
+
+
+
+
+
+
+?>

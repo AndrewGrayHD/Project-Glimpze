@@ -3,60 +3,60 @@ include "database_engine.php";
 include "UpdateInfoClass.php";
   session_start();
 
-   $functionNumber=$_POST['functionNumber'];
+    $functionNumber=$_POST['functionNumber'];
 
-    switch ($functionNumber) {
+     switch ($functionNumber) {
 
-   	case 1:
+    	case 1:
    	 		getProcessthatAllAgentbaseInAccess();		
-    	 break;
+     	 break;
 
-    	 case 2:
-    	 		getCategoryFilter($_POST['IfProcessHaveData']);		
-    	 break;
+     	 case 2:
+     	 		getCategoryFilter($_POST['IfProcessHaveData']);		
+     	 break;
 
-    	 case 3:
-    	 		filterAgentList($_POST['EndorsementProcessModalC'],$_POST['EndorsementHiredFromModalC'],$_POST['EndorsementHiredtoModalC'],$_POST['EndorsementCategoryModalC']);		
-    	 break;
+     	 case 3:
+     	 		filterAgentList($_POST['EndorsementProcessModalC'],$_POST['EndorsementHiredFromModalC'],$_POST['EndorsementHiredtoModalC'],$_POST['EndorsementCategoryModalC']);		
+     	 break;
 
-    	 case 4:
-    	 		getallTrainer($_POST['ProcessFilter']);		
-    	 break;
+     	 case 4:
+     	 		getallTrainer($_POST['ProcessFilter']);		
+     	 break;
 
-    	 case 5:
+     	 case 5:
 
-    			echo json_encode(EndorsementForTraining($_POST['dataFieldVal'],$_POST['EnorsementSavingProcess']));	
+     			echo json_encode(EndorsementForTraining($_POST['dataFieldVal'],$_POST['EnorsementSavingProcess']));	
 
 
-     	break;
+      	break;
 
-     	case 6:
+      	case 6:
      			getProcessthatAllAgent();	
-     	break;
+      	break;
 
-     	case 7:
-     			GetProcessforFilterInNestingAndOperation($_POST['STRCode1']);		
- 	   	break;
+      	case 7:
+      			GetProcessforFilterInNestingAndOperation($_POST['STRCode1']);		
+  	   	break;
 
-     	case 8:
-     			GetTrainerforFilterInNestingAndOperation($_POST['IfProcessHaveData2'],$_POST['STRCode2']);
-     	break;
+      	case 8:
+      			GetTrainerforFilterInNestingAndOperation($_POST['IfProcessHaveData2'],$_POST['STRCode2']);
+      	break;
 
-     	case 9:
-     			GetBatchforFilterInNestingAndOperation($_POST['IfProcessHaveData3'],$_POST['IfTrainerHaveDataVal'],$_POST['STRCode3']);
-     	break;
-     	case 10:
-     			filterNestingList_Operation($_POST['EndorsementProcessModalC2'],$_POST['EndorsementCategoryModalC2'],$_POST['EndorsementBatchModalC2'],$_POST['STRCode4']);
- 		break;	
- //filterNestingList_Operation("Gcash Mnl","Reyes, Argee Zamora","Batch-31",1);
-   	 	case 11:
-     			filterNestingList_Operation($_POST['EndorsementProcessModalC2'],$_POST['EndorsementCategoryModalC2'],$_POST['EndorsementBatchModalC2'],$_POST['STRCode4']);
-     	break;
+      	case 9:
+      			GetBatchforFilterInNestingAndOperation($_POST['IfProcessHaveData3'],$_POST['IfTrainerHaveDataVal'],$_POST['STRCode3']);
+      	break;
+      	case 10:
+      			filterNestingList_Operation($_POST['EndorsementProcessModalC2'],$_POST['EndorsementCategoryModalC2'],$_POST['EndorsementBatchModalC2'],$_POST['STRCode4']);
+  		break;	
+  //filterNestingList_Operation("Gcash Mnl","Reyes, Argee Zamora","Batch-31",1);
+    	 	case 11:
+      			filterNestingList_Operation($_POST['EndorsementProcessModalC2'],$_POST['EndorsementCategoryModalC2'],$_POST['EndorsementBatchModalC2'],$_POST['STRCode4']);
+      	break;
 
-     	case 12:
-     			echo json_encode(EndorsementForNestingAndOperation($_POST['dataFieldVal2'],$_POST['STRCode5'],$_POST['EnorsementSavingProcess2']));
-//EndorsementForNestingAndOperation(array("679454/679462/679458","Gcash Mnl","Reyes, Argee Zamora","05/22/2020","3","Batch-31"),2);
-     	break;
+      	case 12:
+      			echo json_encode(EndorsementForNestingAndOperation($_POST['dataFieldVal2'],$_POST['STRCode5'],$_POST['EnorsementSavingProcess2']));
+// //EndorsementForNestingAndOperation(array("679454/679462/679458","Gcash Mnl","Reyes, Argee Zamora","05/22/2020","3","Batch-31"),2);
+      	break;
 
 
      }
@@ -484,13 +484,13 @@ function EndorsementForTraining($Data,$EnorsementSavingProcess){
 		$trainerEmpIDVal="";
 
 		$ClassConnection=new DB_Connection();
-		
+		$UpdateInfo=new UpdateInfo_Engine();
 
 			$connection= $ClassConnection -> Open_connection(1);
 
-			if($connection){
+		if($connection){
 
-					$SQLstring="SELECT ProcessCode FROM TB_ProcessList WHERE ProcessName like "."'".$Data[1]."'"."";
+			$SQLstring="SELECT ProcessCode FROM TB_ProcessList WHERE ProcessName like "."'".$Data[1]."'"."";
 
 			$execQuery=odbc_exec($connection, $SQLstring);
 
@@ -538,7 +538,7 @@ function EndorsementForTraining($Data,$EnorsementSavingProcess){
 
 		if($connection){
 
-		$SQLstring="SELECT UserEmpID FROM TB_Endorsement_Training WHERE ProcessID=".$ProcessCodeVal." AND TrainingDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
+		$SQLstring="SELECT UserEmpID FROM TB_Endorsement_Training WHERE ProcessID=".$ProcessCodeVal." AND UpdatedBatch like "."'".$Data[5]."'"."";
 
 		$execQuery=odbc_exec($connection, $SQLstring);
 
@@ -561,14 +561,12 @@ function EndorsementForTraining($Data,$EnorsementSavingProcess){
 
 		if($EnorsementSavingProcess=="Insert"){
 
-
-
 		if($alreadyExist===false){
 
 
 		$connection= $ClassConnection -> Open_connection(2);
 
-		$SQLstring="INSERT INTO TB_Endorsement_Training (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,TrainingDate,UserEmpID,UpdatedBatch,Lock) VALUES (?,?,?,?,?,?,?,?,?)";
+		$SQLstring="INSERT INTO TB_Endorsement_Training (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,EffectiveDate,UserEmpID,UpdatedBatch,Lock) VALUES (?,?,?,?,?,?,?,?,?)";
 
 		$Datavalue[]=null;
 		$Datavalue[0]=date('Y-m-d h:m:s');
@@ -598,7 +596,7 @@ function EndorsementForTraining($Data,$EnorsementSavingProcess){
 
     	if(date('Y-m-d',strtotime($Data[3])) <= date('Y-m-d')){
 
-    		$UpdateInfo=new UpdateInfo_Engine();
+    		
     		
     		 $returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,1,$EnorsementSavingProcess);
 
@@ -626,7 +624,7 @@ function EndorsementForTraining($Data,$EnorsementSavingProcess){
         
 		}else{
 
-		 return 2;
+		 return 3;
 
 		}
 
@@ -636,7 +634,7 @@ function EndorsementForTraining($Data,$EnorsementSavingProcess){
 
 		$connection= $ClassConnection -> Open_connection(2);
 
-		$SQLstring="UPDATE TB_Endorsement_Training SET AgentsEmpId=?,ProcessID=?,TrainerEmpID=?,NumberBillable=?,TrainingDate=?,UserEmpID=?,UpdatedBatch=? WHERE ProcessID=".$ProcessCodeVal." AND TrainingDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
+		$SQLstring="UPDATE TB_Endorsement_Training SET AgentsEmpId=?,ProcessID=?,TrainerEmpID=?,NumberBillable=?,EffectiveDate=?,UserEmpID=?,UpdatedBatch=? WHERE ProcessID=".$ProcessCodeVal." AND TrainingDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
 
 		$Datavalue[]=null;
 		
@@ -654,6 +652,7 @@ function EndorsementForTraining($Data,$EnorsementSavingProcess){
      	$execQuery=odbc_execute($prepExec,$Datavalue);
 
        if(!odbc_error($connection)){
+
        		 $rowAffected=@odbc_num_rows($prepExec);
 
        	if( $rowAffected > 0){
@@ -664,19 +663,7 @@ function EndorsementForTraining($Data,$EnorsementSavingProcess){
 
     	$ClassConnection -> Close_connection($connection);
 
-    	if(date('Y-m-d',strtotime($Data[3])) <= date('Y-m-d')){
-
-    		$UpdateInfo=new UpdateInfo_Engine();
-    		
-    		$returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,1,$EnorsementSavingProcess);
-
-    	}else{
-
-    		 $returnVal=1;
-
-    	}
-    	
-    
+    	$returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,1,$EnorsementSavingProcess);
 
         }else{
 
@@ -1062,7 +1049,7 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode,$EnorsementSavingPr
 		$trainerEmpIDVal="";
 
 		$ClassConnection=new DB_Connection();
-		
+		$UpdateInfo=new UpdateInfo_Engine();
 
 			$connection= $ClassConnection -> Open_connection(1);
 
@@ -1113,10 +1100,10 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode,$EnorsementSavingPr
 		if($connection){
 
 			if($SQLstrCode==1){
-			$SQLstring="SELECT UserEmpID FROM TB_Endorsement_Nesting WHERE ProcessID=".$ProcessCodeVal." AND NestingDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
+			$SQLstring="SELECT UserEmpID FROM TB_Endorsement_Nesting WHERE ProcessID=".$ProcessCodeVal." AND UpdatedBatch like "."'".$Data[5]."'"."";
 			}else{
 
-			$SQLstring="SELECT UserEmpID FROM TB_Endorsement_Operation WHERE ProcessID=".$ProcessCodeVal." AND LiveDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
+			$SQLstring="SELECT UserEmpID FROM TB_Endorsement_Operation WHERE ProcessID=".$ProcessCodeVal." AND UpdatedBatch like "."'".$Data[5]."'"."";
 
 			}
 
@@ -1146,9 +1133,9 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode,$EnorsementSavingPr
 		$connection= $ClassConnection -> Open_connection(2);
 
 		if($SQLstrCode==1){
-		$SQLstring="INSERT INTO TB_Endorsement_Nesting (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,NestingDate,UserEmpID,UpdatedBatch,Lock) VALUES (?,?,?,?,?,?,?,?,?)";
+		$SQLstring="INSERT INTO TB_Endorsement_Nesting (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,EffectiveDate,UserEmpID,UpdatedBatch,Lock) VALUES (?,?,?,?,?,?,?,?,?)";
 		}else{
-		$SQLstring="INSERT INTO TB_Endorsement_Operation (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,LiveDate,UserEmpID,UpdatedBatch,Lock) VALUES (?,?,?,?,?,?,?,?,?)";
+		$SQLstring="INSERT INTO TB_Endorsement_Operation (NotifTimeStamp,AgentsEmpId,ProcessID,TrainerEmpID,NumberBillable,EffectiveDate,UserEmpID,UpdatedBatch,Lock) VALUES (?,?,?,?,?,?,?,?,?)";
 		}
 
 
@@ -1182,7 +1169,6 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode,$EnorsementSavingPr
 
     	if(date('Y-m-d',strtotime($Data[3])) <= date('Y-m-d')){
 
-    		$UpdateInfo=new UpdateInfo_Engine();
     		
     		if($SQLstrCode==1){
     		
@@ -1220,7 +1206,7 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode,$EnorsementSavingPr
 
 	   }else{
 
-		 return 2;
+		 return 3;
 
 	   }
 
@@ -1229,9 +1215,9 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode,$EnorsementSavingPr
 	   	$connection= $ClassConnection -> Open_connection(2);
 		
 		if($SQLstrCode==1){
-		$SQLstring="UPDATE TB_Endorsement_Nesting SET AgentsEmpId=?,ProcessID=?,TrainerEmpID=?,NumberBillable=?,NestingDate=?,UserEmpID=?,UpdatedBatch=? WHERE ProcessID=".$ProcessCodeVal." AND NestingDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
+		$SQLstring="UPDATE TB_Endorsement_Nesting SET AgentsEmpId=?,ProcessID=?,TrainerEmpID=?,NumberBillable=?,EffectiveDate=?,UserEmpID=?,UpdatedBatch=? WHERE ProcessID=".$ProcessCodeVal." AND NestingDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
 		}else{
-		$SQLstring="UPDATE TB_Endorsement_Operation SET AgentsEmpId=?,ProcessID=?,TrainerEmpID=?,NumberBillable=?,LiveDate=?,UserEmpID=?,UpdatedBatch=? WHERE ProcessID=".$ProcessCodeVal." AND LiveDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
+		$SQLstring="UPDATE TB_Endorsement_Operation SET AgentsEmpId=?,ProcessID=?,TrainerEmpID=?,NumberBillable=?,EffectiveDate=?,UserEmpID=?,UpdatedBatch=? WHERE ProcessID=".$ProcessCodeVal." AND LiveDate="."'".date('Y-m-d',strtotime($Data[3]))."'"." AND UpdatedBatch like "."'".$Data[5]."'"."";
 		
 		}
 
@@ -1264,9 +1250,6 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode,$EnorsementSavingPr
 
     	$ClassConnection -> Close_connection($connection);
 
-    	if(date('Y-m-d',strtotime($Data[3])) <= date('Y-m-d')){
-
-    		$UpdateInfo=new UpdateInfo_Engine();
     		
     		if($SQLstrCode==1){
     		
@@ -1277,16 +1260,6 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode,$EnorsementSavingPr
     			 $returnVal=$UpdateInfo -> EndorsementUpdateInfo($Data,$ProcessCodeVal,$trainerEmpIDVal,3,$EnorsementSavingProcess);
     		
     		}
-
-    		
-
-    	}else{
-
-    		$returnVal=1;
-
-    	}
-    	
-    
 
         }else{
 
@@ -1301,6 +1274,7 @@ function EndorsementForNestingAndOperation($Data,$SQLstrCode,$EnorsementSavingPr
        	}
 
 	   }
+
 	   return $returnVal;
 
 

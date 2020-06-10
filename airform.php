@@ -89,11 +89,11 @@
 
 </head>
 <body>
-<!--<?php include "php/notificationFunction.php"; ?>-->
+
  <div class="left-sidebar-pro">
         <nav id="sidebar" class="">
             <div class="sidebar-header">
-                <a href="index.html"><img class="main-logo" src="img/logo/glimpze.png" alt="" /></a>
+                <a href="dshBrd.php"><img class="main-logo" src="img/logo/glimpze.png" alt="" /></a>
                 <strong><img src="img/logo/logosn.png" alt="" /></strong>
             </div>
             <div class="left-custom-menu-adp-wrap comment-scrollbar">
@@ -296,11 +296,11 @@
                                         
                                         <div class="col-sm-4">
                                         <label class="login2 pull-right pull-right-pro">Employee ID</label>
-		                                </div>
+                                        </div>
 
-    		                            <div class="col-sm-3">
-      		                             <input type="text" name="airEmpID" class="form-control" value="" placeholder="Press Enter" />
-										
+                                        <div class="col-sm-3">
+                                         <input type="text" name="airEmpID" class="form-control" value="" placeholder="Press Enter" />
+                                        
                                         </div>
                                     </div>
                                   </div>
@@ -311,10 +311,10 @@
                                         
                                         <div class="col-sm-4">
                                         <label class="login2 pull-right pull-right-pro">Full Name</label>
-		                                </div>
+                                        </div>
 
-    		                            <div class="col-sm-5">
-      		                             <input type="text" name="airName" class="form-control" value="" disabled="" />
+                                        <div class="col-sm-5">
+                                         <input type="text" name="airName" class="form-control" value="" disabled="" />
                                         </div>
                                     </div>
                                   </div>
@@ -698,8 +698,9 @@
 
      <script type="text/javascript">
 
-              //start global variable
-                  var userName=<?php  echo json_encode($_SESSION['LastName'].", ".$_SESSION['FirstName']); ?>;
+            
+           //start global variable
+            var userName=<?php  echo json_encode($_SESSION['LastName'].", ".$_SESSION['FirstName']); ?>;
                  //end global variable
 
              $(document).ready(function () {
@@ -1113,9 +1114,7 @@
                 
                 var dataVal=[EmpIDVal,EmpName,ProcessVal,SupervisorVal,AdressVal,ConatctVal,Isuuance,LWDVal,EffectivedVal,ExpectedDateVal,lastimeComVal,actionTakenVal,remarksVal,typeFoDeliveryVal,donateLeaveVal];
 
-                alert(dataVal);
-                alert(retrievedValue);
-                   
+             
           
                   $.ajax({
                                 url: 'php/notificationFunction.php',
@@ -1197,8 +1196,10 @@
             });
 
             });
+        
+                  
+            
 
-              
 
     </script>
    

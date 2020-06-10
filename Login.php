@@ -171,7 +171,7 @@
                 success: function(data){
 
                         var successfullValue=JSON.parse(data);
-                      
+                
                        if (successfullValue==1){
                             
                             window.location = 'dshBrd.php';

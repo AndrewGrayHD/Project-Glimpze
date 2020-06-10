@@ -84,7 +84,8 @@
       <!-- boostrap 
         ============================================ -->
 
-  <style>
+  
+    <style>
     @media screen and (min-width: 768px) {
         .modal-dialog {
           width: 700px; /* New width for default modal */
@@ -110,8 +111,6 @@
 
 </head>
 <body>
-
-<!--<?php include "php/notificationFunction.php"; ?>-->
 
  <div class="left-sidebar-pro">
         <nav id="sidebar" class="">
@@ -205,8 +204,8 @@
                                     <div class="col-lg-1 col-md-0 col-sm-1 col-xs-12">
                                         <div class="menu-switcher-pro">
                                             <button type="button" id="sidebarCollapse" class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
-                                                    <i class="fa fa-bars"></i>
-                                                </button>
+													<i class="fa fa-bars"></i>
+												</button>
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
@@ -230,10 +229,10 @@
                                           
                                                 <li class="nav-item">
                                                     <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle">
-                                                            <i class="fa fa-user adminpro-user-rounded header-riht-inf" aria-hidden="true"></i>
-                                                            <span id="UserName" class="admin-name"></span>
-                                                            <i class="fa fa-angle-down adminpro-icon adminpro-down-arrow"></i>
-                                                        </a>
+															<i class="fa fa-user adminpro-user-rounded header-riht-inf" aria-hidden="true"></i>
+															<span id="UserName" class="admin-name"></span>
+															<i class="fa fa-angle-down adminpro-icon adminpro-down-arrow"></i>
+														</a>
                                                     <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
                                                        
                                                         <li><a href="#"><span class="fa fa-user author-log-ic"></span>My Profile</a>
@@ -298,7 +297,7 @@
            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
              <div class="sparkline12-list">
                  <div class="sparkline11-graph">
-                   <div class="row">
+                     <div class="row">
                        <div class="col-sm-12">
                            <div class="main-sparkline12-hd">
                              <h4 id="NotifTitle">Operation Endorsement</h4>
@@ -392,7 +391,7 @@
       </div>
     </div>
 
-             <!-- Modal for process modification -->
+       <!-- Modal for process modification -->
             <div class="modal fade" id="OperationEndorsementModal" role="dialog">
             <div id="fullwidth" class="modal-dialog">
     
@@ -467,7 +466,7 @@
             </div>
             </div>
             </div>
-                             
+
 
         <!-- Form  End -->
         <div class="footer-copyright-area">
@@ -483,7 +482,7 @@
         </div>
     </div>
 
-  <!-- jquery
+     <!-- jquery
         ============================================ -->
     <script src="js/vendor/jquery-1.11.3.min.js"></script>
     <!-- bootstrap JS
@@ -570,15 +569,16 @@
 
      <script type="text/javascript">
 
-             
-
+            
+       
              $(document).ready(function () {
 
                  //start global variable
-                  
                   var userName=<?php  echo json_encode($_SESSION['LastName'].", ".$_SESSION['FirstName']); ?>;
-                  var WhatTodo=<?php  echo json_encode($_SESSION['WhatToDoEndorsement']); ?>;
-                  var ProcessModalVal="";
+                  var WhatTodo="Insert";
+                 //end global variable
+
+              var ProcessModalVal="";
                   var TrainerModalVal="";
                   var BatchModalVal="";
 
@@ -962,10 +962,11 @@
 
          
             });
+ 
 
-            
-              
           
+           
+
 
     </script>
    

@@ -1,11 +1,12 @@
 
+
 <?php session_start(); ?>
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 
-    <meta charset="utf-8" />
+   <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <title>Glimpze</title>
      <meta name="description" content=""/>
@@ -84,10 +85,11 @@
       <!-- boostrap 
         ============================================ -->
 
+
   <style>
     @media screen and (min-width: 768px) {
         .modal-dialog {
-          width: 700px; /* New width for default modal */
+          width: 800px; /* New width for default modal */
         }
         .modal-sm {
           width: 500px; /* New width for small modal */
@@ -95,7 +97,7 @@
     }
     @media screen and (min-width: 992px) {
         .modal-lg {
-          width: 800px; /* New width for large modal */
+          width: 1000px; /* New width for large modal */
         }
     }
 
@@ -106,14 +108,15 @@
 
 
 </style>
+  
 
 
 </head>
 <body>
 
-<!--<?php include "php/notificationFunction.php"; ?>-->
-
- <div class="left-sidebar-pro">
+  <!-- <?php include "php/empInfoAllFunction.php"; ?>-->
+  
+  <div class="left-sidebar-pro">
         <nav id="sidebar" class="">
             <div class="sidebar-header">
                 <a href="index.html"><img class="main-logo" src="img/logo/glimpze.png" alt="" /></a>
@@ -140,6 +143,7 @@
                                    <span class="mini-click-non">My Record</span>
                                 </a>
                         </li>
+                     
                         <li>
                             <a title="Employee" class="has-arrow"  aria-expanded="false"><i class="fa big-icon fa-users icon-wrap"></i> <span class="mini-click-non">Employee</span></a>
                             <ul class="submenu-angle" aria-expanded="false">
@@ -284,25 +288,31 @@
                 </div>
             </div>
             <!-- Mobile Menu end -->
-        
+            <div class="breadcome-area">
+                <div class="container-fluid">
+                    <div class="row">
+                        
+                </div>
+            </div>
+        </div>
          <!--  Form Start -->
+
       <div class="advanced-form-area mg-tb-15">
         <div class="container-fluid">
           <div class="row">   
            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
              <div class="sparkline12-list">
-                 <div class="sparkline11-graph">
-                   <div class="row">
+                
+                  <div class="row">
                        <div class="col-sm-12">
                            <div class="main-sparkline12-hd">
                              <h1>Dashboard</h1>
                             </div>
                        </div>  
                    </div>
+                   
 
-
-            
-        <div class="product-sales-area mg-tb-30">
+                    <div class="product-sales-area mg-tb-30">
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-9 col-md-9 col-sm-9 col-xs-12">
@@ -362,7 +372,7 @@
                                 </div>
                             </div>
                         </div>
-                       
+
                         <div class="analytics-adminpro-wrap reso-mg-b-30">
                             <div class="skill-content-3 analytics-adminpro analytics-adminpro4">
                                 <div class="skill">
@@ -408,14 +418,14 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>
         </div>
-       
 
-            
+
+
 
          <div class="container-fluid">
                 <div class="row">
@@ -508,31 +518,33 @@
                             <tr>
                                 <th>Alert</th>
                             </tr>
-                          
+
                             <tr>
                                 <td>No pending approval</td>
                             </tr>
-                            
+
                     </table>
                     </div>
-                
+
                 </div>
             </div>
 
-           
 
-                 </div>
-              </div>
-            </div>
-         </div>
-      </div>
-    </div>
+        
+
 
             
+                 </div>
+             </div>
+           </div>
+        </div>
+      </div>
+
           
-                             
+          
 
 
+        <!-- Form  End -->
         <div class="footer-copyright-area">
             <div class="container-fluid">
                 <div class="row">
@@ -545,8 +557,9 @@
             </div>
         </div>
     </div>
-
-  <!-- jquery
+  </div>
+ 
+ <!-- jquery
         ============================================ -->
     <script src="js/vendor/jquery-1.11.3.min.js"></script>
     <!-- bootstrap JS
@@ -595,7 +608,7 @@
     <script src="js/calendar/moment.min.js"></script>
     <script src="js/calendar/fullcalendar.min.js"></script>
     <script src="js/calendar/fullcalendar-active.js"></script>
-  
+
     <!-- touchspin JS
         ============================================ -->
     <script src="js/touchspin/jquery.bootstrap-touchspin.min.js"></script>
@@ -651,24 +664,26 @@
     <!-- main JS
         ============================================ -->
     <script src="js/main.js"></script>
+
+
     
 
-     <script type="text/javascript">
+    <script type="text/javascript">
 
-             
 
-             $(document).ready(function () {
+
+      $(document).ready(function () {
 
                  //start global variable
-                  
+
                   var userName=<?php  echo json_encode($_SESSION['LastName'].", ".$_SESSION['FirstName']); ?>;
-            
+
 
                  //end global variable
 
                 $("#UserName").text(userName);
 
-                
+
 
 
         Morris.Area({
@@ -757,18 +772,14 @@
 
 
 
-     
+
+    });
+
     });
 
 
-        
 
-         
-});
-
-            
-</script>
-   
+    </script>
     
 
 </body>

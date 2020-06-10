@@ -84,7 +84,7 @@ if ($SuccessFullyLogin){
 	echo json_encode(0);
 }
 
-$ClassConnection -> Close_connection($connection);	
+
 
 }
 

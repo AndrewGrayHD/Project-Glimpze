@@ -11,80 +11,80 @@
      <meta name="description" content=""/>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- favicon
-		============================================ -->
+        ============================================ -->
     <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico" />
     <!-- Google Fonts
-		============================================ -->
+        ============================================ -->
     <link href="https://fonts.googleapis.com/css?family=Play:400,700" rel="stylesheet" />
     <!-- Bootstrap CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/bootstrap.min.css" />
     <!-- Bootstrap CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/font-awesome.min.css" />
     <!-- owl.carousel CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/owl.carousel.css" />
     <link rel="stylesheet" href="css/owl.theme.css" />
     <link rel="stylesheet" href="css/owl.transitions.css" />
     <!-- animate CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/animate.css" />
     <!-- normalize CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/normalize.css" />
     <!-- meanmenu icon CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/meanmenu.min.css" />
     <!-- main CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/main.css" />
     <!-- morrisjs CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/morrisjs/morris.css" />
     <!-- mCustomScrollbar CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/scrollbar/jquery.mCustomScrollbar.min.css" />
     <!-- metisMenu CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/metisMenu/metisMenu.min.css" />
     <link rel="stylesheet" href="css/metisMenu/metisMenu-vertical.css" />
     <!-- calendar CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/calendar/fullcalendar.min.css" />
     <link rel="stylesheet" href="css/calendar/fullcalendar.print.min.css" />
     <!-- modals CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/modals.css" />
     <!-- touchspin CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/touchspin/jquery.bootstrap-touchspin.min.css" />
     <!-- datapicker CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/datapicker/datepicker3.css" />
      <!-- colorpicker CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/colorpicker/colorpicker.css" />
     <!-- select2 CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/select2/select2.min.css" />
     <!-- forms CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/form/all-type-forms.css" />
     <!-- style CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="style.css" />
     <!-- responsive CSS
-		============================================ -->
+        ============================================ -->
     <link rel="stylesheet" href="css/responsive.css" />
     <!-- modernizr JS
-		============================================ -->
+        ============================================ -->
     <script src="js/vendor/modernizr-2.8.3.min.js"></script>
 
       <!-- boostrap 
-		============================================ -->
+        ============================================ -->
 
-  <style>
+ <style>
     @media screen and (min-width: 768px) {
         .modal-dialog {
           width: 700px; /* New width for default modal */
@@ -106,12 +106,11 @@
 
 
 </style>
+  
 
 
 </head>
 <body>
-
-<!--<?php include "php/notificationFunction.php"; ?>-->
 
  <div class="left-sidebar-pro">
         <nav id="sidebar" class="">
@@ -205,8 +204,8 @@
                                     <div class="col-lg-1 col-md-0 col-sm-1 col-xs-12">
                                         <div class="menu-switcher-pro">
                                             <button type="button" id="sidebarCollapse" class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
-													<i class="fa fa-bars"></i>
-												</button>
+                                                    <i class="fa fa-bars"></i>
+                                                </button>
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
@@ -230,10 +229,10 @@
                                           
                                                 <li class="nav-item">
                                                     <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle">
-															<i class="fa fa-user adminpro-user-rounded header-riht-inf" aria-hidden="true"></i>
-															<span id="UserName" class="admin-name"></span>
-															<i class="fa fa-angle-down adminpro-icon adminpro-down-arrow"></i>
-														</a>
+                                                            <i class="fa fa-user adminpro-user-rounded header-riht-inf" aria-hidden="true"></i>
+                                                            <span id="UserName" class="admin-name"></span>
+                                                            <i class="fa fa-angle-down adminpro-icon adminpro-down-arrow"></i>
+                                                        </a>
                                                     <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
                                                        
                                                         <li><a href="#"><span class="fa fa-user author-log-ic"></span>My Profile</a>
@@ -306,7 +305,6 @@
                        </div>  
                    </div>
 
-                  
                     <div class="row">
                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                           <div class="all-form-element-inner">
@@ -319,11 +317,11 @@
                                         
                                         <div class="col-sm-4">
                                         <label class="login2 pull-right pull-right-pro">Employee ID</label>
-		                                </div>
+                                        </div>
 
-    		                            <div class="col-sm-3">
-      		                             <input type="text" name="ResEmpIdTXT" class="form-control" value="" placeholder="Press Enter" />
-										
+                                        <div class="col-sm-3">
+                                         <input type="text" name="ResEmpIdTXT" class="form-control" value="" placeholder="Press Enter" />
+                                        
                                         </div>
                                     </div>
                                   </div>
@@ -334,10 +332,10 @@
                                         
                                         <div class="col-sm-4">
                                         <label class="login2 pull-right pull-right-pro">Full Name</label>
-		                                </div>
+                                        </div>
 
-    		                            <div class="col-sm-5">
-      		                             <input type="text" name="ResNameTXT" class="form-control" value="" disabled="" />
+                                        <div class="col-sm-5">
+                                         <input type="text" name="ResNameTXT" class="form-control" value="" disabled="" />
                                         </div>
                                     </div>
                                   </div>
@@ -390,10 +388,10 @@
                                         
                                         <div class="col-sm-4">
                                         <label class="login2 pull-right pull-right-pro">Date Received</label>
-		                                </div>
+                                        </div>
 
-    		                            <div class="col-sm-5">
-      		                            <div class="form-group data-custon-pick" id="data_1">
+                                        <div class="col-sm-5">
+                                        <div class="form-group data-custon-pick" id="data_1">
                                         <div class="input-group date">
                                            
                                             <input type="text" name="ResDateReceivedTXT" class="form-control" value="" />
@@ -502,12 +500,14 @@
                        </div>
                      </div>
 
+
                  </div>
               </div>
             </div>
          </div>
       </div>
     </div>
+
 
      <!-- Modal for confirm sending -->
             <div class="modal fade" id="ConfirmResignationLedgerModal" role="dialog">
@@ -604,8 +604,8 @@
             </div>
 
 
-                             
 
+    
         <!-- Form  End -->
         <div class="footer-copyright-area">
             <div class="container-fluid">
@@ -621,91 +621,90 @@
     </div>
 
   <!-- jquery
-		============================================ -->
+        ============================================ -->
     <script src="js/vendor/jquery-1.11.3.min.js"></script>
     <!-- bootstrap JS
-		============================================ -->
+        ============================================ -->
     <script src="js/bootstrap.min.js"></script>
     <!-- wow JS
-		============================================ -->
+        ============================================ -->
     <script src="js/wow.min.js"></script>
     <!-- price-slider JS
-		============================================ -->
+        ============================================ -->
     <script src="js/jquery-price-slider.js"></script>
     <!-- meanmenu JS
-		============================================ -->
+        ============================================ -->
     <script src="js/jquery.meanmenu.js"></script>
     <!-- owl.carousel JS
-		============================================ -->
+        ============================================ -->
     <script src="js/owl.carousel.min.js"></script>
     <!-- sticky JS
-		============================================ -->
+        ============================================ -->
     <script src="js/jquery.sticky.js"></script>
     <!-- scrollUp JS
-		============================================ -->
+        ============================================ -->
     <script src="js/jquery.scrollUp.min.js"></script>
     <!-- mCustomScrollbar JS
-		============================================ -->
+        ============================================ -->
     <script src="js/scrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
     <script src="js/scrollbar/mCustomScrollbar-active.js"></script>
     <!-- metisMenu JS
-		============================================ -->
+        ============================================ -->
     <script src="js/metisMenu/metisMenu.min.js"></script>
     <script src="js/metisMenu/metisMenu-active.js"></script>
      <!-- colorpicker JS
-		============================================ -->
+        ============================================ -->
     <script src="js/colorpicker/jquery.spectrum.min.js"></script>
     <script src="js/colorpicker/color-picker-active.js"></script>
     <!-- datapicker JS
-		============================================ -->
+        ============================================ -->
     <script src="js/datapicker/bootstrap-datepicker.js"></script>
     <script src="js/datapicker/datepicker-active.js"></script>
     <!-- input-mask JS
-		============================================ -->
+        ============================================ -->
     <script src="js/input-mask/jasny-bootstrap.min.js"></script>
 
      <!-- chosen JS
-		============================================ -->
+        ============================================ -->
     <script src="js/chosen/chosen.jquery.js"></script>
     <script src="js/chosen/chosen-active.js"></script>
     <!-- select2 JS
-		============================================ -->
+        ============================================ -->
     <script src="js/select2/select2.full.min.js"></script>
     <script src="js/select2/select2-active.js"></script>
     <!-- ionRangeSlider JS
-		============================================ -->
+        ============================================ -->
     <script src="js/ionRangeSlider/ion.rangeSlider.min.js"></script>
     <script src="js/ionRangeSlider/ion.rangeSlider.active.js"></script>
     <!-- rangle-slider JS
-		============================================ -->
+        ============================================ -->
     <script src="js/rangle-slider/jquery-ui-1.10.4.custom.min.js"></script>
     <script src="js/rangle-slider/jquery-ui-touch-punch.min.js"></script>
     <script src="js/rangle-slider/rangle-active.js"></script>
     <!-- knob JS
-		============================================ -->
+        ============================================ -->
     <script src="js/knob/jquery.knob.js"></script>
     <script src="js/knob/knob-active.js"></script>
 
     <!-- tab JS
-		============================================ -->
+        ============================================ -->
     <script src="js/tab.js"></script>
     <!-- icheck JS
-		============================================ -->
+        ============================================ -->
     <script src="js/icheck/icheck.min.js"></script>
     <script src="js/icheck/icheck-active.js"></script>
     <!-- plugins JS
-		============================================ -->
+        ============================================ -->
     <script src="js/plugins.js"></script>
     <!-- main JS
-		============================================ -->
+        ============================================ -->
     <script src="js/main.js"></script>
     
 
      <script type="text/javascript">
 
-             
-
-             $(document).ready(function () {
+            
+        $(document).ready(function () {
 
                  //start global variable
                   var userName=<?php  echo json_encode($_SESSION['LastName'].", ".$_SESSION['FirstName']); ?>;
@@ -1105,7 +1104,12 @@
 
             
               
+                  
           
+
+          
+           
+
 
     </script>
    

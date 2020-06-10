@@ -20,6 +20,8 @@ $database="DB_Employee_Management_System_Notification";
 $database="DB_Employee_Management_System_Tracking";
 }else if($databaseName==4){
 $database="DB_Employee_Management_System_Separated";
+}else if($databaseName==5){
+$database="DB_Employee_Management_System_EmpInfo_Changes_Tracking";
 }
 
 $connection= odbc_connect("Driver={SQL Server Native Client 11.0};Server=$server;Database=$database;",$user,$password);

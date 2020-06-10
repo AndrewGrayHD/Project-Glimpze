@@ -195,7 +195,7 @@ function ResignationSaving($DataVal,$Ref,$whatTodo){
         if( $rowAffected > 0){
 
          if(date('Y-m-d',strtotime($DataVal[6]))===date('Y-m-d')){
-             $returnVal= $UpdateInfo -> ResignationUpdateInfo($Data);
+             $returnVal= $UpdateInfo -> ResignationUpdateInfo($Data,$whatTodo);
         }else{
             $returnVal=1;
         }
@@ -246,7 +246,7 @@ function ResignationSaving($DataVal,$Ref,$whatTodo){
         
         if( $rowAffected > 0){
 
-            $returnVal=1;
+            $returnVal= $UpdateInfo -> ResignationUpdateInfo($Data,$whatTodo);
             
         }else{
            return 0;
@@ -340,7 +340,7 @@ $returnVal=0;
         if( $rowAffected > 0){
 
         if(date('Y-m-d',strtotime($DataVal[5]))===date('Y-m-d')){
-             $returnVal=$UpdateInfo -> autoseperationUpdateInfo($DataVal,$statCode);
+             $returnVal=$UpdateInfo -> autoseperationUpdateInfo($DataVal,$statCode,$whatTodo);
         
         }else{
             $returnVal=1;
@@ -394,7 +394,7 @@ $returnVal=0;
         if( $rowAffected > 0){
 
          
-            $returnVal=1;
+            $returnVal=$UpdateInfo -> autoseperationUpdateInfo($DataVal,$statCode,$whatTodo);
             
 
         }else{
@@ -579,7 +579,7 @@ function backtoworkSaving($DataVal,$whatTodo){
 
                 $UpdateInfo=new UpdateInfo_Engine();
 
-                $returnVal=$UpdateInfo -> btwUpdateInfo($DataVal);
+                $returnVal=$UpdateInfo -> btwUpdateInfo($DataVal,$whatTodo);
                 
                 }else{
                 $returnVal=1;
@@ -615,7 +615,7 @@ function backtoworkSaving($DataVal,$whatTodo){
 }
 
 
-function checkAir($Prolonged,$empID){
+function checkAir($Prolonged,$empIDm){
 
  $ClassConnection=new DB_Connection();
  
